@@ -85,7 +85,7 @@ export default function Home() {
     if (fe) console.error(fe);
     if (ee) console.error(ee);
     if (de) console.error(de);
-    setProfile(p || { id: userId, nome: "Usuário", role: "encarregado" });
+    if (error) setMessage("Erro do Supabase: " + error.message);
     setEmployees(f || []);
     setEpis(e || []);
     setDeliveries(d || []);
