@@ -98,7 +98,7 @@ export default function Home() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword(login);
     setLoading(false);
-    if (error) setMessage("Não foi possível entrar. Confira e-mail e senha.");
+    if (error) setMessage("Erro do Supabase: " + error.message);
   }
 
   async function logout() {
