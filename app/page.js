@@ -165,7 +165,7 @@ const [historyDateTo, setHistoryDateTo] = useState("");
       String(f.nome || "").toLowerCase().includes(q) ||
       String(f.matricula || "").toLowerCase().includes(q);
 
-    const deliveries = group.deliveries || [];
+    const deliveries = group.entregas || [];
 
     const matchesDate =
   (!historyDateFrom && !historyDateTo) ||
