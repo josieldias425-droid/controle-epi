@@ -167,19 +167,21 @@ const [historyDateTo, setHistoryDateTo] = useState("");
 
     const deliveries = group.deliveries || [];
 
-    const matchesDate = deliveries.some((delivery) => {
-      const date = String(delivery.data_entrega || "");
+    const matchesDate =
+  (!historyDateFrom && !historyDateTo) ||
+  deliveries.some((delivery) => {
+    const date = String(delivery.data_entrega || "");
 
-      if (historyDateFrom && date < historyDateFrom) {
-        return false;
-      }
+    if (historyDateFrom && date < historyDateFrom) {
+      return false;
+    }
 
-      if (historyDateTo && date > historyDateTo) {
-        return false;
-      }
+    if (historyDateTo && date > historyDateTo) {
+      return false;
+    }
 
-      return true;
-    });
+    return true;
+  });
 
     return matchesSearch && matchesDate;
   });
