@@ -48,7 +48,7 @@ export default function Home() {
   const [printGroup, setPrintGroup] = useState(null);
   const [selectedPrintItemIds, setSelectedPrintItemIds] = useState([]);
   const [encarregados, setEncarregados] = useState([]);
-  const [newEncarregado, setNewEncarregado] = useState({ id: "", nome: "" });
+  const [newEncarregado, setNewEncarregado] = useState({ nome: "", email: "", senha: "", confirmarSenha: "" });
   const [editingEncarregado, setEditingEncarregado] = useState(null);
 
   const isAdmin = profile?.role === "admin";
@@ -240,33 +240,60 @@ export default function Home() {
   async function saveEncarregado(e) {
     e.preventDefault();
     setMessage("");
-    const id = newEncarregado.id.trim();
-    const nome = newEncarregado.nome.trim();
 
-    if (!id) return setMessage("Informe o ID do usuário do Supabase Authentication.");
+    const nome = newEncarregado.nome.trim();
+    const email = newEncarregado.email.trim().toLowerCase();
+    const senha = newEncarregado.senha;
+    const confirmarSenha = newEncarregado.confirmarSenha;
+
     if (!nome) return setMessage("Informe o nome do encarregado.");
 
+    if (editingEncarregado) {
+      setLoading(true);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ nome })
+        .eq("id", editingEncarregado.id);
+
+      if (error) {
+        setMessage("Erro ao atualizar encarregado: " + error.message);
+      } else {
+        setMessage("Encarregado atualizado com sucesso.");
+        setNewEncarregado({ nome: "", email: "", senha: "", confirmarSenha: "" });
+        setEditingEncarregado(null);
+        await loadData(session.user.id);
+      }
+      setLoading(false);
+      return;
+    }
+
+    if (!email) return setMessage("Informe o e-mail do encarregado.");
+    if (!senha) return setMessage("Informe uma senha inicial.");
+    if (senha.length < 6) return setMessage("A senha precisa ter pelo menos 6 caracteres.");
+    if (senha !== confirmarSenha) return setMessage("As senhas não conferem.");
+
     setLoading(true);
-    const payload = { id, nome, role: "encarregado" };
-    const query = editingEncarregado
-      ? supabase.from("profiles").update({ nome }).eq("id", editingEncarregado.id)
-      : supabase.from("profiles").insert(payload);
-    const { error } = await query;
+
+    const { data, error } = await supabase.functions.invoke("criar-encarregado", {
+      body: { nome, email, senha }
+    });
 
     if (error) {
-      setMessage("Erro ao salvar encarregado: " + error.message);
+      setMessage("Erro ao cadastrar encarregado: " + (error.message || "Não foi possível chamar a função."));
+    } else if (data?.error) {
+      setMessage("Erro ao cadastrar encarregado: " + data.error);
     } else {
-      setMessage(editingEncarregado ? "Encarregado atualizado." : "Encarregado vinculado com sucesso.");
-      setNewEncarregado({ id: "", nome: "" });
-      setEditingEncarregado(null);
+      setMessage("Encarregado cadastrado com sucesso.");
+      setNewEncarregado({ nome: "", email: "", senha: "", confirmarSenha: "" });
       await loadData(session.user.id);
     }
+
     setLoading(false);
   }
 
   function startEditEncarregado(x) {
     setEditingEncarregado(x);
-    setNewEncarregado({ id: x.id, nome: x.nome || "" });
+    setNewEncarregado({ nome: x.nome || "", email: "", senha: "", confirmarSenha: "" });
     setTab("encarregados");
   }
 
@@ -506,27 +533,38 @@ export default function Home() {
             </div>
 
             <div className="info-box">
-              <strong>Como funciona nesta etapa</strong>
-              <span>O encarregado precisa primeiro existir em <b>Supabase Authentication</b>. Depois, informe aqui o ID do usuário para vincular o perfil. No próximo passo podemos automatizar essa criação.</span>
+              <strong>{editingEncarregado ? "Editar encarregado" : "Cadastrar novo encarregado"}</strong>
+              <span>{editingEncarregado ? "Altere o nome do encarregado. O acesso de login continua o mesmo." : "Cadastre o acesso diretamente pelo sistema. Não é mais necessário copiar UUID do Supabase."}</span>
             </div>
 
             <form onSubmit={saveEncarregado} className="admin-form">
               <div className="grid2">
-                <label>ID do usuário (UUID)*
-                  <input required value={newEncarregado.id} onChange={(e) => setNewEncarregado({ ...newEncarregado, id: e.target.value })} placeholder="Cole o User UID do Authentication" disabled={!!editingEncarregado} />
-                </label>
-                <label>Nome do encarregado*
+                <label>Nome completo*
                   <input required value={newEncarregado.nome} onChange={(e) => setNewEncarregado({ ...newEncarregado, nome: e.target.value })} placeholder="Ex.: João Silva" />
                 </label>
+
+                {!editingEncarregado && (
+                  <>
+                    <label>E-mail de acesso*
+                      <input type="email" required value={newEncarregado.email} onChange={(e) => setNewEncarregado({ ...newEncarregado, email: e.target.value })} placeholder="joao@empresa.com" autoComplete="off" />
+                    </label>
+                    <label>Senha inicial*
+                      <input type="password" required minLength={6} value={newEncarregado.senha} onChange={(e) => setNewEncarregado({ ...newEncarregado, senha: e.target.value })} placeholder="Mínimo 6 caracteres" autoComplete="new-password" />
+                    </label>
+                    <label>Confirmar senha*
+                      <input type="password" required minLength={6} value={newEncarregado.confirmarSenha} onChange={(e) => setNewEncarregado({ ...newEncarregado, confirmarSenha: e.target.value })} placeholder="Repita a senha" autoComplete="new-password" />
+                    </label>
+                  </>
+                )}
               </div>
-              <button className="primary" disabled={loading}>{editingEncarregado ? "Salvar alterações" : "Vincular encarregado"}</button>
-              {editingEncarregado && <button type="button" className="ghost" onClick={() => { setEditingEncarregado(null); setNewEncarregado({ id: "", nome: "" }); }}>Cancelar edição</button>}
+              <button className="primary" disabled={loading}>{editingEncarregado ? "Salvar alterações" : "Cadastrar encarregado"}</button>
+              {editingEncarregado && <button type="button" className="ghost" onClick={() => { setEditingEncarregado(null); setNewEncarregado({ nome: "", email: "", senha: "", confirmarSenha: "" }); }}>Cancelar edição</button>}
             </form>
 
             <div className="admin-list">
               {encarregados.map((x) => (
                 <div className="admin-row" key={x.id}>
-                  <div><strong>{x.nome || "Sem nome"}</strong><span>UID: {x.id}</span><span>Perfil: encarregado</span></div>
+                  <div><strong>{x.nome || "Sem nome"}</strong><span>Perfil: encarregado</span></div>
                   <div><button className="ghost" onClick={() => startEditEncarregado(x)}>Editar</button><button className="danger" onClick={() => removeEncarregado(x)}>Remover perfil</button></div>
                 </div>
               ))}
