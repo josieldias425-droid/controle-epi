@@ -658,233 +658,6 @@ export default function Home() {
             align-items: stretch;
           }
         }
-
-        /* ===== FICHA A4 - IMPRESSÃO PROFISSIONAL ===== */
-        .print-layer {
-          position: fixed;
-          inset: 0;
-          z-index: 10000;
-          overflow: auto;
-          background: #e9ecef;
-          padding: 24px;
-        }
-
-        .print-actions {
-          position: sticky;
-          top: 0;
-          z-index: 5;
-          display: flex;
-          justify-content: center;
-          gap: 10px;
-          padding: 10px;
-          margin: 0 auto 16px;
-        }
-
-        .sheet {
-          width: 210mm;
-          min-height: 297mm;
-          margin: 0 auto;
-          padding: 9mm 10mm 8mm;
-          box-sizing: border-box;
-          background: #fff;
-          color: #111;
-          font-family: Arial, Helvetica, sans-serif;
-          font-size: 9px;
-        }
-
-        .sheet-head {
-          position: relative;
-          min-height: 23mm;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-bottom: 1.5px solid #111;
-          margin-bottom: 4mm;
-          padding: 0 28mm 3mm;
-          box-sizing: border-box;
-          text-align: center;
-        }
-
-        .sheet-head > div:last-child {
-          width: 100%;
-        }
-
-        .company-logo {
-          position: absolute;
-          right: 0;
-          top: 0;
-          width: 25mm;
-          height: 15mm;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 17px;
-          font-weight: 800;
-          letter-spacing: 1px;
-          border: 1px solid #222;
-          border-radius: 4px;
-        }
-
-        .sheet-head h1 {
-          margin: 0;
-          font-size: 14px;
-          line-height: 1.15;
-          font-weight: 800;
-        }
-
-        .sheet-head p {
-          margin: 2mm 0 0;
-          font-size: 8.5px;
-        }
-
-        .employee-box {
-          display: grid;
-          grid-template-columns: 2fr 1fr 1.4fr 1fr;
-          border: 1px solid #111;
-          margin-bottom: 3mm;
-        }
-
-        .employee-box > div {
-          min-height: 7mm;
-          padding: 1.6mm 2mm;
-          border-right: 1px solid #111;
-          border-bottom: 1px solid #111;
-          box-sizing: border-box;
-        }
-
-        .employee-box > div:nth-child(4n) {
-          border-right: 0;
-        }
-
-        .employee-box > div:nth-last-child(-n+2) {
-          border-bottom: 0;
-        }
-
-        .term-title,
-        .catalog-title {
-          margin: 2.5mm 0 1.5mm;
-          font-size: 9.5px;
-          text-align: center;
-          font-weight: 800;
-        }
-
-        .term {
-          margin: 0;
-          padding: 2mm;
-          border: 1px solid #111;
-          font-size: 8px;
-          line-height: 1.35;
-          text-align: justify;
-        }
-
-        .signature {
-          margin: 2.5mm 0;
-          font-size: 8.5px;
-        }
-
-        .sheet table {
-          width: 100%;
-          border-collapse: collapse;
-          table-layout: fixed;
-          font-size: 7.8px;
-        }
-
-        .sheet th,
-        .sheet td {
-          border: 1px solid #111;
-          padding: 1.2mm 1mm;
-          height: 6.3mm;
-          box-sizing: border-box;
-          vertical-align: middle;
-        }
-
-        .sheet th {
-          font-weight: 800;
-          text-align: center;
-          background: #f1f1f1;
-        }
-
-        .sheet th:nth-child(1) { width: 11%; }
-        .sheet th:nth-child(2) { width: 30%; }
-        .sheet th:nth-child(3) { width: 10%; }
-        .sheet th:nth-child(4) { width: 17%; }
-        .sheet th:nth-child(5) { width: 17%; }
-        .sheet th:nth-child(6) { width: 15%; }
-
-        .catalog {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          border: 1px solid #111;
-          font-size: 7.7px;
-        }
-
-        .catalog span {
-          padding: 1.4mm 2mm;
-          border-right: 1px solid #111;
-          border-bottom: 1px solid #111;
-        }
-
-        .catalog span:nth-child(2n) {
-          border-right: 0;
-        }
-
-        .catalog span:last-child {
-          border-bottom: 0;
-        }
-
-        .sheet-foot {
-          margin-top: 2.5mm;
-          padding-top: 1.5mm;
-          border-top: 1px solid #777;
-          text-align: right;
-          font-size: 7px;
-        }
-
-        @media print {
-          @page {
-            size: A4 portrait;
-            margin: 0;
-          }
-
-          html,
-          body {
-            margin: 0 !important;
-            padding: 0 !important;
-            background: #fff !important;
-          }
-
-          body * {
-            visibility: hidden;
-          }
-
-          .print-layer,
-          .print-layer * {
-            visibility: visible;
-          }
-
-          .print-layer {
-            position: absolute !important;
-            inset: 0 !important;
-            overflow: visible !important;
-            padding: 0 !important;
-            background: #fff !important;
-          }
-
-          .print-actions {
-            display: none !important;
-          }
-
-          .sheet {
-            width: 210mm !important;
-            min-height: 297mm !important;
-            height: 297mm !important;
-            margin: 0 !important;
-            padding: 9mm 10mm 8mm !important;
-            box-sizing: border-box !important;
-            overflow: hidden !important;
-          }
-        }
-
       `}</style>
 
       {printGroup && (
@@ -973,9 +746,15 @@ function Printable({ delivery }) {
 
   return (
     <div className="sheet">
-      <div className="sheet-head">
-        <div className="company-logo">AFC</div>
-        <div>
+      <div className="sheet-head" style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
+        <div className="company-logo" style={{ flex: "0 0 auto", width: "105px" }}>
+          <img
+            src="/afc-logo.png"
+            alt="AFC Geofísica"
+            style={{ width: "100%", height: "auto", maxHeight: "72px", objectFit: "contain", objectPosition: "left top" }}
+          />
+        </div>
+        <div style={{ flex: 1 }}>
           <h1>FICHA DE EQUIPAMENTO PROTEÇÃO INDIVIDUAL</h1>
           <p>Controle de entrega e devolução de EPI</p>
         </div>
@@ -1044,14 +823,14 @@ function Printable({ delivery }) {
         Catálogo de Descrição dos Equipamentos de Proteção Individual
       </h2>
 
-      <div className="catalog">
-        <span>Capacete de segurança</span>
-        <span>Luva de proteção</span>
-        <span>Proteção auricular</span>
-        <span>Botina de segurança</span>
-        <span>Óculos de segurança</span>
-        <span>Perneira</span>
-        <span>Luva anticorte</span>
+      <div className="catalog" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px 14px" }}>
+        <span><b>Capacete de segurança:</b> protege a cabeça contra impactos e queda de objetos.</span>
+        <span><b>Luva de proteção:</b> protege as mãos contra abrasão, sujeira e outros riscos da atividade.</span>
+        <span><b>Proteção auricular:</b> reduz a exposição ao ruído e ajuda a preservar a audição.</span>
+        <span><b>Botina de segurança:</b> protege os pés contra impactos, perfurações e outros riscos.</span>
+        <span><b>Óculos de segurança:</b> protegem os olhos contra poeira, partículas e respingos.</span>
+        <span><b>Perneira:</b> protege pernas e tornozelos contra cortes, impactos e outros riscos.</span>
+        <span><b>Luva anticorte:</b> protege as mãos durante atividades com materiais ou ferramentas cortantes.</span>
       </div>
 
       <div className="sheet-foot">
