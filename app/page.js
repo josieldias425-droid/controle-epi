@@ -44,6 +44,8 @@ export default function Home() {
   const [newEpi, setNewEpi] = useState(EMPTY_EPI);
   const [editingEpi, setEditingEpi] = useState(null);
   const [historySearch, setHistorySearch] = useState("");
+  const [historyDateFrom, setHistoryDateFrom] = useState("");
+const [historyDateTo, setHistoryDateTo] = useState("");
   const [printDelivery, setPrintDelivery] = useState(null);
   const [printGroup, setPrintGroup] = useState(null);
   const [selectedPrintItemIds, setSelectedPrintItemIds] = useState([]);
@@ -153,15 +155,35 @@ export default function Home() {
   }, [deliveries]);
 
   const filteredHistory = useMemo(() => {
-    const q = historySearch.trim().toLowerCase();
-    if (!q) return groupedHistory;
+  const q = historySearch.trim().toLowerCase();
 
-    return groupedHistory.filter((group) => {
-      const f = group.funcionarios || {};
-      return String(f.nome || "").toLowerCase().includes(q) || String(f.matricula || "").toLowerCase().includes(q);
+  return groupedHistory.filter((group) => {
+    const f = group.funcionarios || {};
+
+    const matchesSearch =
+      !q ||
+      String(f.nome || "").toLowerCase().includes(q) ||
+      String(f.matricula || "").toLowerCase().includes(q);
+
+    const deliveries = group.deliveries || [];
+
+    const matchesDate = deliveries.some((delivery) => {
+      const date = String(delivery.data_entrega || "");
+
+      if (historyDateFrom && date < historyDateFrom) {
+        return false;
+      }
+
+      if (historyDateTo && date > historyDateTo) {
+        return false;
+      }
+
+      return true;
     });
-  }, [groupedHistory, historySearch]);
 
+    return matchesSearch && matchesDate;
+  });
+}, [groupedHistory, historySearch, historyDateFrom, historyDateTo]);
   function selectEmployee(employee) {
     setSelectedEmployee(employee);
     setEmployeeSearch(employee.nome);
@@ -491,12 +513,33 @@ export default function Home() {
       onChange={(e) => setHistorySearch(e.target.value)}
     />
   </label>
+         <label>
+  Data inicial
+  <input
+    type="date"
+    value={historyDateFrom}
+    onChange={(e) => setHistoryDateFrom(e.target.value)}
+  />
+</label>
+
+<label>
+  Data final
+  <input
+    type="date"
+    value={historyDateTo}
+    onChange={(e) => setHistoryDateTo(e.target.value)}
+  />
+</label>
 
   {historySearch.trim() && (
     <button
       type="button"
       className="ghost"
-      onClick={() => setHistorySearch("")}
+     onClick={() => {
+  setHistorySearch("");
+  setHistoryDateFrom("");
+  setHistoryDateTo("");
+}}
     >
       Limpar pesquisa
     </button>
@@ -504,7 +547,7 @@ export default function Home() {
 </div>
 
 <div className="history-result-info">
-  {historySearch.trim()
+  {historySearch.trim() || historyDateFrom || historyDateTo
     ? `${filteredHistory.length} funcionário(s) encontrado(s)`
     : `${filteredHistory.length} funcionário(s) no histórico`}
 </div>
