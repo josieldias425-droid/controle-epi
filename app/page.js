@@ -747,11 +747,11 @@ function Printable({ delivery }) {
   return (
     <div className="sheet">
       <div className="sheet-head" style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
-        <div className="company-logo" style={{ flex: "0 0 auto", width: "105px" }}>
+        <div className="company-logo" style={{ flex: "0 0 auto", width: "80px" }}>
           <img
             src="/afc-logo.png"
             alt="AFC Geofísica"
-            style={{ width: "100%", height: "auto", maxHeight: "72px", objectFit: "contain", objectPosition: "left top" }}
+            style={{ width: "100%", height: "auto", maxHeight: "58px", objectFit: "contain", objectPosition: "left top" }}
           />
         </div>
         <div style={{ flex: 1 }}>
