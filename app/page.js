@@ -46,6 +46,7 @@ export default function Home() {
   const [historySearch, setHistorySearch] = useState("");
   const [historyDateFrom, setHistoryDateFrom] = useState("");
 const [historyDateTo, setHistoryDateTo] = useState("");
+  const [historyEpi, setHistoryEpi] = useState("");
   const [printDelivery, setPrintDelivery] = useState(null);
   const [printGroup, setPrintGroup] = useState(null);
   const [selectedPrintItemIds, setSelectedPrintItemIds] = useState([]);
@@ -168,24 +169,36 @@ const [historyDateTo, setHistoryDateTo] = useState("");
     const deliveries = group.entregas || [];
 
     const matchesDate =
-  (!historyDateFrom && !historyDateTo) ||
-  deliveries.some((delivery) => {
-    const date = String(delivery.data_entrega || "");
+      (!historyDateFrom && !historyDateTo) ||
+      deliveries.some((delivery) => {
+        const date = String(delivery.data_entrega || "");
 
-    if (historyDateFrom && date < historyDateFrom) {
-      return false;
-    }
+        if (historyDateFrom && date < historyDateFrom) {
+          return false;
+        }
 
-    if (historyDateTo && date > historyDateTo) {
-      return false;
-    }
+        if (historyDateTo && date > historyDateTo) {
+          return false;
+        }
 
-    return true;
+        return true;
+      });
+
+    const matchesEpi =
+      !historyEpi ||
+      (group.entrega_itens || []).some(
+        (item) => String(item.epi_id || "") === String(historyEpi)
+      );
+
+    return matchesSearch && matchesDate && matchesEpi;
   });
-
-    return matchesSearch && matchesDate;
-  });
-}, [groupedHistory, historySearch, historyDateFrom, historyDateTo]);
+}, [
+  groupedHistory,
+  historySearch,
+  historyDateFrom,
+  historyDateTo,
+  historyEpi
+]);
   function selectEmployee(employee) {
     setSelectedEmployee(employee);
     setEmployeeSearch(employee.nome);
@@ -531,6 +544,23 @@ const [historyDateTo, setHistoryDateTo] = useState("");
     value={historyDateTo}
     onChange={(e) => setHistoryDateTo(e.target.value)}
   />
+</label>
+         <label>
+  Filtrar por EPI
+  <select
+    value={historyEpi}
+    onChange={(e) => setHistoryEpi(e.target.value)}
+  >
+    <option value="">Todos os EPIs</option>
+
+    {epis
+      .filter((epi) => epi.ativo !== false)
+      .map((epi) => (
+        <option key={epi.id} value={epi.id}>
+          {epi.nome}
+        </option>
+      ))}
+  </select>
 </label>
 
   {historySearch.trim() && (
