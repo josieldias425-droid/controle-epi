@@ -481,11 +481,33 @@ export default function Home() {
               </div>
             </div>
 
-            <input
-              placeholder="Buscar por funcionário ou matrícula..."
-              value={historySearch}
-              onChange={(e) => setHistorySearch(e.target.value)}
-            />
+            <div className="history-filter">
+  <label>
+    Pesquisar no histórico
+    <input
+      type="search"
+      placeholder="Digite nome ou matrícula..."
+      value={historySearch}
+      onChange={(e) => setHistorySearch(e.target.value)}
+    />
+  </label>
+
+  {historySearch.trim() && (
+    <button
+      type="button"
+      className="ghost"
+      onClick={() => setHistorySearch("")}
+    >
+      Limpar pesquisa
+    </button>
+  )}
+</div>
+
+<div className="history-result-info">
+  {historySearch.trim()
+    ? `${filteredHistory.length} funcionário(s) encontrado(s)`
+    : `${filteredHistory.length} funcionário(s) no histórico`}
+</div>
 
             <div className="history-list">
               {filteredHistory.map((group) => (
@@ -581,6 +603,41 @@ export default function Home() {
       <style jsx global>{`
 
         .info-box {
+                .history-filter {
+          display: flex;
+          align-items: flex-end;
+          gap: 10px;
+          margin: 16px 0 8px;
+        }
+
+        .history-filter label {
+          flex: 1;
+          display: grid;
+          gap: 6px;
+          font-weight: 600;
+        }
+
+        .history-filter input {
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .history-result-info {
+          margin: 0 0 12px;
+          font-size: 13px;
+          color: #66706a;
+        }
+
+        @media (max-width: 600px) {
+          .history-filter {
+            align-items: stretch;
+            flex-direction: column;
+          }
+
+          .history-filter .ghost {
+            width: 100%;
+          }
+        }
           display: grid;
           gap: 6px;
           padding: 14px;
