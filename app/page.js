@@ -45,6 +45,8 @@ export default function Home() {
   const [editingEpi, setEditingEpi] = useState(null);
   const [historySearch, setHistorySearch] = useState("");
   const [printDelivery, setPrintDelivery] = useState(null);
+  const [printGroup, setPrintGroup] = useState(null);
+  const [selectedPrintItemIds, setSelectedPrintItemIds] = useState([]);
 
   const isAdmin = profile?.role === "admin";
 
@@ -293,15 +295,49 @@ export default function Home() {
     setTimeout(() => window.print(), 100);
   }
 
-  function printEmployeeHistory(group) {
+  function openPrintSelection(group) {
+    setPrintGroup(group);
+    setSelectedPrintItemIds(
+      group.entrega_itens.map((item, index) => item.id || `${item.epi_id || "epi"}-${index}`)
+    );
+  }
+
+  function togglePrintItem(item, index) {
+    const key = item.id || `${item.epi_id || "epi"}-${index}`;
+    setSelectedPrintItemIds((ids) =>
+      ids.includes(key)
+        ? ids.filter((id) => id !== key)
+        : [...ids, key]
+    );
+  }
+
+  function printEmployeeHistory(group, selectedIds = null) {
     const latestDelivery = group.entregas[0] || {};
+    const allItems = group.entrega_itens || [];
+    const ids = selectedIds || allItems.map((item, index) => item.id || `${item.epi_id || "epi"}-${index}`);
+    const selectedItems = allItems.filter((item, index) =>
+      ids.includes(item.id || `${item.epi_id || "epi"}-${index}`)
+    );
+
+    if (!selectedItems.length) {
+      setMessage("Selecione pelo menos um EPI para imprimir.");
+      return;
+    }
+
+    if (selectedItems.length > 16) {
+      setMessage("A ficha comporta no máximo 16 EPIs. Selecione até 16 itens.");
+      return;
+    }
+
     const full = {
       ...latestDelivery,
       funcionario_id: group.funcionario_id,
       funcionarios: group.funcionarios,
-      entrega_itens: group.entrega_itens
+      entrega_itens: selectedItems
     };
 
+    setPrintGroup(null);
+    setSelectedPrintItemIds([]);
     setPrintDelivery(full);
     setTimeout(() => window.print(), 100);
   }
@@ -391,7 +427,7 @@ export default function Home() {
 
                   <button
                     className="primary"
-                    onClick={() => printEmployeeHistory(group)}
+                    onClick={() => openPrintSelection(group)}
                   >
                     Imprimir ficha
                   </button>
@@ -415,6 +451,148 @@ export default function Home() {
           <section className="panel"><h1>Catálogo de EPIs</h1><p>Cadastre os equipamentos e seus CAs.</p><form onSubmit={saveEpi} className="admin-form"><div className="grid2"><label>Nome*<input required value={newEpi.nome} onChange={(e) => setNewEpi({ ...newEpi, nome: e.target.value })} /></label><label>Categoria<input value={newEpi.categoria} onChange={(e) => setNewEpi({ ...newEpi, categoria: e.target.value })} /></label><label>CA<input value={newEpi.ca} onChange={(e) => setNewEpi({ ...newEpi, ca: e.target.value })} /></label><label>Unidade<input value={newEpi.unidade} onChange={(e) => setNewEpi({ ...newEpi, unidade: e.target.value })} /></label></div><button className="primary">{editingEpi ? "Salvar alterações" : "Cadastrar EPI"}</button>{editingEpi && <button type="button" className="ghost" onClick={() => { setEditingEpi(null); setNewEpi(EMPTY_EPI); }}>Cancelar edição</button>}</form><div className="admin-list">{epis.map((x) => <div className="admin-row" key={x.id}><div><strong>{x.nome}</strong><span>{x.categoria || "-"} · CA {x.ca || "-"}</span></div><div><button className="ghost" onClick={() => startEditEpi(x)}>Editar</button><button className="danger" onClick={() => deactivateEpi(x)}>Desativar</button></div></div>)}</div></section>
         )}
       </main>
+
+      <style jsx global>{`
+        .modal-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          background: rgba(0, 0, 0, 0.55);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+        }
+        .print-select-card {
+          width: min(720px, 100%);
+          max-height: 90vh;
+          overflow: auto;
+          background: #fff;
+          border-radius: 16px;
+          padding: 22px;
+          box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        }
+        .print-select-actions {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          margin: 12px 0;
+        }
+        .print-item-list {
+          display: grid;
+          gap: 8px;
+          margin: 14px 0;
+        }
+        .print-item-option {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 12px;
+          border: 1px solid #ddd;
+          border-radius: 10px;
+          cursor: pointer;
+          background: #fafafa;
+        }
+        .print-item-option input {
+          width: 20px;
+          height: 20px;
+          margin-top: 2px;
+        }
+        .print-item-option div {
+          display: grid;
+          gap: 3px;
+        }
+        .print-item-option span {
+          font-size: 13px;
+          opacity: .75;
+        }
+        .print-select-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding-top: 12px;
+          border-top: 1px solid #eee;
+        }
+        @media (max-width: 600px) {
+          .print-select-footer {
+            flex-direction: column;
+            align-items: stretch;
+          }
+        }
+      `}</style>
+
+      {printGroup && (
+        <div className="modal-backdrop no-print">
+          <div className="print-select-card">
+            <div className="section-head">
+              <div>
+                <h2>Escolher EPIs para imprimir</h2>
+                <p>
+                  {printGroup.funcionarios?.nome || "Funcionário"} · {printGroup.entrega_itens.length} item(ns) registrados. A ficha comporta até 16 linhas.
+                </p>
+              </div>
+              <button className="ghost" onClick={() => setPrintGroup(null)}>Fechar</button>
+            </div>
+
+            <div className="print-select-actions">
+              <button
+                type="button"
+                className="ghost"
+                onClick={() =>
+                  setSelectedPrintItemIds(
+                    printGroup.entrega_itens.map((item, index) => item.id || `${item.epi_id || "epi"}-${index}`)
+                  )
+                }
+              >
+                Selecionar todos
+              </button>
+
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => setSelectedPrintItemIds([])}
+              >
+                Limpar seleção
+              </button>
+            </div>
+
+            <div className="print-item-list">
+              {printGroup.entrega_itens.map((item, index) => {
+                const key = item.id || `${item.epi_id || "epi"}-${index}`;
+                const checked = selectedPrintItemIds.includes(key);
+
+                return (
+                  <label className="print-item-option" key={key}>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => togglePrintItem(item, index)}
+                    />
+                    <div>
+                      <strong>{item.epis?.nome || "EPI"}</strong>
+                      <span>
+                        Qtd.: {item.quantidade || 1} · CA: {item.ca || "-"} · Recebimento: {formatDate(item.data_recebimento)}
+                      </span>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+
+            <div className="print-select-footer">
+              <span>{selectedPrintItemIds.length} selecionado(s)</span>
+              <button
+                type="button"
+                className="primary big"
+                onClick={() => printEmployeeHistory(printGroup, selectedPrintItemIds)}
+              >
+                Imprimir selecionados
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {printDelivery && <div className="print-layer"><div className="print-actions no-print"><button className="primary" onClick={() => window.print()}>Imprimir / Salvar PDF</button><button className="ghost" onClick={() => setPrintDelivery(null)}>Fechar</button></div><Printable delivery={printDelivery} /></div>}
     </>
