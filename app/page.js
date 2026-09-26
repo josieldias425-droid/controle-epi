@@ -121,27 +121,21 @@ export default function Home() {
 
       supabase
         .from("entregas")
-        .select(`
-          id,
-          funcionario_id,
-          encarregado_id,
-          data_entrega,
-          observacao,
-          assinatura,
-          created_at,
-          funcionarios(nome, matricula, funcao, empresa),
-          entrega_itens(
-            id,
-            epi_id,
-            quantidade,
-            tamanho,
-            ca,
-            data_recebimento,
-            data_devolucao,
-            observacao,
-            epis(nome, categoria)
-          )
-        `)
+        .select(
+          `id, funcionario_id, encarregado_id, data_entrega, observacao, assinatura, created_at,
+           funcionarios(nome, matricula, funcao, empresa),
+           entrega_itens(
+             id,
+             epi_id,
+             quantidade,
+             tamanho,
+             ca,
+             data_recebimento,
+             data_devolucao,
+             observacao,
+             epis(nome, categoria)
+           )`
+        )
         .order("created_at", { ascending: false })
     ]);
 
@@ -154,11 +148,6 @@ export default function Home() {
     if (ee) console.error(ee);
     if (de) console.error(de);
 
-    /*
-      IMPORTANTE:
-      Se existir perfil no Supabase, usamos o perfil real.
-      Se não existir, usamos admin como fallback.
-    */
     setProfile(
       p || {
         id: userId,
@@ -170,6 +159,7 @@ export default function Home() {
     setEmployees(f || []);
     setEpis(e || []);
     setDeliveries(d || []);
+
     setLoading(false);
   }
 
@@ -213,7 +203,9 @@ export default function Home() {
   const filteredHistory = useMemo(() => {
     const q = historySearch.trim().toLowerCase();
 
-    if (!q) return deliveries;
+    if (!q) {
+      return deliveries;
+    }
 
     return deliveries.filter((d) => {
       const f = d.funcionarios || {};
@@ -255,7 +247,12 @@ export default function Home() {
   function updateDeliveryItem(index, field, value) {
     setDeliveryItems((rows) =>
       rows.map((r, i) =>
-        i === index ? { ...r, [field]: value } : r
+        i === index
+          ? {
+              ...r,
+              [field]: value
+            }
+          : r
       )
     );
   }
@@ -285,23 +282,23 @@ export default function Home() {
 
     setLoading(true);
 
-    const { data: delivery, error } =
-      await supabase
-        .from("entregas")
-        .insert({
-          funcionario_id: selectedEmployee.id,
-          encarregado_id: session.user.id,
-          data_entrega: deliveryDate || today(),
-          observacao: observation || null,
-          assinatura: null
-        })
-        .select()
-        .single();
+    const { data: delivery, error } = await supabase
+      .from("entregas")
+      .insert({
+        funcionario_id: selectedEmployee.id,
+        encarregado_id: session.user.id,
+        data_entrega: deliveryDate || today(),
+        observacao: observation || null,
+        assinatura: null
+      })
+      .select()
+      .single();
 
     if (error) {
       setLoading(false);
       return setMessage(
-        "Erro ao salvar a entrega: " + error.message
+        "Erro ao salvar a entrega: " +
+          error.message
       );
     }
 
@@ -317,10 +314,9 @@ export default function Home() {
         item.data_devolucao || null
     }));
 
-    const { error: itemsError } =
-      await supabase
-        .from("entrega_itens")
-        .insert(rows);
+    const { error: itemsError } = await supabase
+      .from("entrega_itens")
+      .insert(rows);
 
     if (itemsError) {
       await supabase
@@ -344,23 +340,29 @@ export default function Home() {
       entrega_itens: deliveryItems.map(
         (item, i) => ({
           ...rows[i],
-          epis: { nome: item.nome }
+          epis: {
+            nome: item.nome
+          }
         })
       )
     };
 
     setPrintDelivery(full);
+
     setSelectedEmployee(null);
     setEmployeeSearch("");
     setDeliveryItems([]);
     setObservation("");
     setDeliveryDate(today());
     setTab("historico");
+
     setMessage(
       "Entrega registrada com sucesso."
     );
+
     setLoading(false);
   }
+
   async function saveEmployee(e) {
     e.preventDefault();
 
@@ -737,6 +739,7 @@ export default function Home() {
                   setEmployeeSearch(
                     e.target.value
                   );
+
                   setSelectedEmployee(null);
                 }}
               />
@@ -783,9 +786,7 @@ export default function Home() {
                 <div className="selected-card">
                   <div>
                     <strong>
-                      {
-                        selectedEmployee.nome
-                      }
+                      {selectedEmployee.nome}
                     </strong>
 
                     <span>
@@ -808,6 +809,7 @@ export default function Home() {
                       setSelectedEmployee(
                         null
                       );
+
                       setEmployeeSearch("");
                     }}
                   >
@@ -859,10 +861,12 @@ export default function Home() {
                       }
                       disabled={deliveryItems.some(
                         (x) =>
-                          x.epi_id === epi.id
+                          x.epi_id ===
+                          epi.id
                       )}
                     >
                       + {epi.nome}
+
                       {epi.ca
                         ? ` · CA ${epi.ca}`
                         : ""}
@@ -910,11 +914,14 @@ export default function Home() {
                                 value={
                                   item.quantidade
                                 }
-                                onChange={(e) =>
+                                onChange={(
+                                  e
+                                ) =>
                                   updateDeliveryItem(
                                     index,
                                     "quantidade",
-                                    e.target.value
+                                    e.target
+                                      .value
                                   )
                                 }
                               />
@@ -927,11 +934,14 @@ export default function Home() {
                                 value={
                                   item.tamanho
                                 }
-                                onChange={(e) =>
+                                onChange={(
+                                  e
+                                ) =>
                                   updateDeliveryItem(
                                     index,
                                     "tamanho",
-                                    e.target.value
+                                    e.target
+                                      .value
                                   )
                                 }
                                 placeholder="Ex.: M, 40"
@@ -942,12 +952,17 @@ export default function Home() {
                               CA
 
                               <input
-                                value={item.ca}
-                                onChange={(e) =>
+                                value={
+                                  item.ca
+                                }
+                                onChange={(
+                                  e
+                                ) =>
                                   updateDeliveryItem(
                                     index,
                                     "ca",
-                                    e.target.value
+                                    e.target
+                                      .value
                                   )
                                 }
                               />
@@ -962,11 +977,14 @@ export default function Home() {
                               value={
                                 item.data_devolucao
                               }
-                              onChange={(e) =>
+                              onChange={(
+                                e
+                              ) =>
                                 updateDeliveryItem(
                                   index,
                                   "data_devolucao",
-                                  e.target.value
+                                  e.target
+                                    .value
                                 )
                               }
                             />
@@ -1024,7 +1042,8 @@ export default function Home() {
                   >
                     <div>
                       <strong>
-                        {d.funcionarios?.nome ||
+                        {d.funcionarios
+                          ?.nome ||
                           "Funcionário"}
                       </strong>
 
@@ -1068,7 +1087,8 @@ export default function Home() {
         )}
 
         {isAdmin &&
-          tab === "funcionarios" && (
+          tab ===
+            "funcionarios" && (
             <section className="panel">
               <h1>
                 Funcionários
@@ -1087,6 +1107,7 @@ export default function Home() {
                 <div className="grid2">
                   <label>
                     Nome*
+
                     <input
                       required
                       value={
@@ -1095,7 +1116,8 @@ export default function Home() {
                       onChange={(e) =>
                         setNewEmployee({
                           ...newEmployee,
-                          nome: e.target.value
+                          nome: e.target
+                            .value
                         })
                       }
                     />
@@ -1103,6 +1125,7 @@ export default function Home() {
 
                   <label>
                     Matrícula
+
                     <input
                       value={
                         newEmployee.matricula
@@ -1119,6 +1142,7 @@ export default function Home() {
 
                   <label>
                     Função
+
                     <input
                       value={
                         newEmployee.funcao
@@ -1135,6 +1159,7 @@ export default function Home() {
 
                   <label>
                     Empresa
+
                     <input
                       value={
                         newEmployee.empresa
@@ -1151,6 +1176,7 @@ export default function Home() {
 
                   <label>
                     Setor
+
                     <input
                       value={
                         newEmployee.setor
@@ -1167,6 +1193,7 @@ export default function Home() {
 
                   <label>
                     Admissão
+
                     <input
                       type="date"
                       value={
@@ -1197,6 +1224,7 @@ export default function Home() {
                       setEditingEmployee(
                         null
                       );
+
                       setNewEmployee(
                         EMPTY_FUNC
                       );
@@ -1208,192 +1236,214 @@ export default function Home() {
               </form>
 
               <div className="admin-list">
-                {employees.map((x) => (
-                  <div
-                    className="admin-row"
-                    key={x.id}
-                  >
-                    <div>
-                      <strong>
-                        {x.nome}
-                      </strong>
+                {employees.map(
+                  (x) => (
+                    <div
+                      className="admin-row"
+                      key={x.id}
+                    >
+                      <div>
+                        <strong>
+                          {x.nome}
+                        </strong>
 
-                      <span>
-                        {x.matricula ||
-                          "-"}{" "}
-                        ·{" "}
-                        {x.funcao || "-"}
-                      </span>
+                        <span>
+                          {x.matricula ||
+                            "-"}{" "}
+                          ·{" "}
+                          {x.funcao ||
+                            "-"}
+                        </span>
+                      </div>
+
+                      <div>
+                        <button
+                          className="ghost"
+                          onClick={() =>
+                            startEditEmployee(
+                              x
+                            )
+                          }
+                        >
+                          Editar
+                        </button>
+
+                        <button
+                          className="danger"
+                          onClick={() =>
+                            deactivateEmployee(
+                              x
+                            )
+                          }
+                        >
+                          Desativar
+                        </button>
+                      </div>
                     </div>
-
-                    <div>
-                      <button
-                        className="ghost"
-                        onClick={() =>
-                          startEditEmployee(
-                            x
-                          )
-                        }
-                      >
-                        Editar
-                      </button>
-
-                      <button
-                        className="danger"
-                        onClick={() =>
-                          deactivateEmployee(
-                            x
-                          )
-                        }
-                      >
-                        Desativar
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </section>
           )}
 
-        {isAdmin && tab === "epis" && (
-          <section className="panel">
-            <h1>
-              Catálogo de EPIs
-            </h1>
+        {isAdmin &&
+          tab === "epis" && (
+            <section className="panel">
+              <h1>
+                Catálogo de EPIs
+              </h1>
 
-            <p>
-              Cadastre os equipamentos
-              e seus CAs.
-            </p>
+              <p>
+                Cadastre os equipamentos
+                e seus CAs.
+              </p>
 
-            <form
-              onSubmit={saveEpi}
-              className="admin-form"
-            >
-              <div className="grid2">
-                <label>
-                  Nome*
-                  <input
-                    required
-                    value={newEpi.nome}
-                    onChange={(e) =>
-                      setNewEpi({
-                        ...newEpi,
-                        nome: e.target.value
-                      })
-                    }
-                  />
-                </label>
+              <form
+                onSubmit={saveEpi}
+                className="admin-form"
+              >
+                <div className="grid2">
+                  <label>
+                    Nome*
 
-                <label>
-                  Categoria
-                  <input
-                    value={
-                      newEpi.categoria
-                    }
-                    onChange={(e) =>
-                      setNewEpi({
-                        ...newEpi,
-                        categoria:
-                          e.target.value
-                      })
-                    }
-                  />
-                </label>
-
-                <label>
-                  CA
-                  <input
-                    value={newEpi.ca}
-                    onChange={(e) =>
-                      setNewEpi({
-                        ...newEpi,
-                        ca: e.target.value
-                      })
-                    }
-                  />
-                </label>
-
-                <label>
-                  Unidade
-                  <input
-                    value={
-                      newEpi.unidade
-                    }
-                    onChange={(e) =>
-                      setNewEpi({
-                        ...newEpi,
-                        unidade:
-                          e.target.value
-                      })
-                    }
-                  />
-                </label>
-              </div>
-
-              <button className="primary">
-                {editingEpi
-                  ? "Salvar alterações"
-                  : "Cadastrar EPI"}
-              </button>
-
-              {editingEpi && (
-                <button
-                  type="button"
-                  className="ghost"
-                  onClick={() => {
-                    setEditingEpi(null);
-                    setNewEpi(EMPTY_EPI);
-                  }}
-                >
-                  Cancelar edição
-                </button>
-              )}
-            </form>
-
-            <div className="admin-list">
-              {epis.map((x) => (
-                <div
-                  className="admin-row"
-                  key={x.id}
-                >
-                  <div>
-                    <strong>
-                      {x.nome}
-                    </strong>
-
-                    <span>
-                      {x.categoria ||
-                        "-"}{" "}
-                      · CA{" "}
-                      {x.ca || "-"}
-                    </span>
-                  </div>
-
-                  <div>
-                    <button
-                      className="ghost"
-                      onClick={() =>
-                        startEditEpi(x)
+                    <input
+                      required
+                      value={
+                        newEpi.nome
                       }
-                    >
-                      Editar
-                    </button>
-
-                    <button
-                      className="danger"
-                      onClick={() =>
-                        deactivateEpi(x)
+                      onChange={(e) =>
+                        setNewEpi({
+                          ...newEpi,
+                          nome: e.target
+                            .value
+                        })
                       }
-                    >
-                      Desativar
-                    </button>
-                  </div>
+                    />
+                  </label>
+
+                  <label>
+                    Categoria
+
+                    <input
+                      value={
+                        newEpi.categoria
+                      }
+                      onChange={(e) =>
+                        setNewEpi({
+                          ...newEpi,
+                          categoria:
+                            e.target.value
+                        })
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    CA
+
+                    <input
+                      value={
+                        newEpi.ca
+                      }
+                      onChange={(e) =>
+                        setNewEpi({
+                          ...newEpi,
+                          ca: e.target
+                            .value
+                        })
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Unidade
+
+                    <input
+                      value={
+                        newEpi.unidade
+                      }
+                      onChange={(e) =>
+                        setNewEpi({
+                          ...newEpi,
+                          unidade:
+                            e.target.value
+                        })
+                      }
+                    />
+                  </label>
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
+
+                <button className="primary">
+                  {editingEpi
+                    ? "Salvar alterações"
+                    : "Cadastrar EPI"}
+                </button>
+
+                {editingEpi && (
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={() => {
+                      setEditingEpi(null);
+                      setNewEpi(
+                        EMPTY_EPI
+                      );
+                    }}
+                  >
+                    Cancelar edição
+                  </button>
+                )}
+              </form>
+
+              <div className="admin-list">
+                {epis.map(
+                  (x) => (
+                    <div
+                      className="admin-row"
+                      key={x.id}
+                    >
+                      <div>
+                        <strong>
+                          {x.nome}
+                        </strong>
+
+                        <span>
+                          {x.categoria ||
+                            "-"}{" "}
+                          · CA{" "}
+                          {x.ca || "-"}
+                        </span>
+                      </div>
+
+                      <div>
+                        <button
+                          className="ghost"
+                          onClick={() =>
+                            startEditEpi(
+                              x
+                            )
+                          }
+                        >
+                          Editar
+                        </button>
+
+                        <button
+                          className="danger"
+                          onClick={() =>
+                            deactivateEpi(
+                              x
+                            )
+                          }
+                        >
+                          Desativar
+                        </button>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            </section>
+          )}
       </main>
 
       {printDelivery && (
@@ -1429,11 +1479,20 @@ export default function Home() {
 
 function Printable({ delivery }) {
   const f = delivery.funcionarios || {};
-  const items =
-    delivery.entrega_itens || [];
+  const items = delivery.entrega_itens || [];
+
+  // A ficha terá no máximo 16 linhas
+  const visibleItems = items.slice(0, 16);
+
+  // Completa as linhas vazias até chegar a 16
+  const emptyRows = Math.max(
+    0,
+    16 - visibleItems.length
+  );
 
   return (
     <div className="sheet">
+
       <div className="sheet-head">
         <div className="company-logo">
           AFC
@@ -1492,11 +1551,10 @@ function Printable({ delivery }) {
 
       <p className="term">
         Declaro ter recebido
-        gratuitamente os
-        Equipamentos de Proteção
-        Individual relacionados
-        nesta ficha, em perfeitas
-        condições de uso.
+        gratuitamente os Equipamentos
+        de Proteção Individual
+        relacionados nesta ficha, em
+        perfeitas condições de uso.
         Comprometo-me a utilizá-los
         corretamente durante as
         atividades, zelar pela sua
@@ -1509,65 +1567,84 @@ function Printable({ delivery }) {
 
       <div className="signature">
         Assinatura do empregado:
+        {" "}
         ______________________________________________
       </div>
 
       <table>
         <thead>
           <tr>
-            <th>Quantidade</th>
-            <th>EPI marca/modelo</th>
-            <th>CA</th>
+            <th>
+              Quantidade
+            </th>
+
+            <th>
+              EPI marca/modelo
+            </th>
+
+            <th>
+              CA
+            </th>
+
             <th>
               Data do Recebimento
             </th>
+
             <th>
               Data da Devolução
             </th>
-            <th>Assinatura</th>
+
+            <th>
+              Assinatura
+            </th>
           </tr>
         </thead>
 
         <tbody>
-          {items.map((item, i) => (
-            <tr key={item.id || i}>
-              <td>
-                {item.quantidade}
-              </td>
+          {visibleItems.map(
+            (item, i) => (
+              <tr
+                key={
+                  item.id || i
+                }
+              >
+                <td>
+                  {item.quantidade}
+                </td>
 
-              <td>
-                {item.epis?.nome || ""}
-                {item.tamanho
-                  ? ` — Tam. ${item.tamanho}`
-                  : ""}
-              </td>
+                <td>
+                  {item.epis?.nome ||
+                    ""}
 
-              <td>
-                {item.ca || ""}
-              </td>
+                  {item.tamanho
+                    ? ` — Tam. ${item.tamanho}`
+                    : ""}
+                </td>
 
-              <td>
-                {formatDate(
-                  item.data_recebimento ||
-                    delivery.data_entrega
-                )}
-              </td>
+                <td>
+                  {item.ca || ""}
+                </td>
 
-              <td>
-                {formatDate(
-                  item.data_devolucao
-                )}
-              </td>
+                <td>
+                  {formatDate(
+                    item.data_recebimento ||
+                      delivery.data_entrega
+                  )}
+                </td>
 
-              <td></td>
-            </tr>
-          ))}
+                <td>
+                  {formatDate(
+                    item.data_devolucao
+                  )}
+                </td>
+
+                <td></td>
+              </tr>
+            )
+          )}
 
           {Array.from({
-            length: Math.max(
-              4,
-              10 - items.length
-            )
+            length: emptyRows
           }).map((_, i) => (
             <tr
               key={`empty-${i}`}
@@ -1595,15 +1672,11 @@ function Printable({ delivery }) {
         </span>
 
         <span>
-          Óculos de proteção
+          Luva de proteção
         </span>
 
         <span>
-          Protetor auricular
-        </span>
-
-        <span>
-          Luvas de proteção
+          Proteção auricular
         </span>
 
         <span>
@@ -1611,15 +1684,15 @@ function Printable({ delivery }) {
         </span>
 
         <span>
-          Respirador / máscara
+          Óculos de segurança
         </span>
 
         <span>
-          Colete refletivo
+          Perneira
         </span>
 
         <span>
-          Protetor facial
+          Luva anticorte
         </span>
       </div>
 
