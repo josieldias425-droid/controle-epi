@@ -47,6 +47,9 @@ export default function Home() {
   const [printDelivery, setPrintDelivery] = useState(null);
   const [printGroup, setPrintGroup] = useState(null);
   const [selectedPrintItemIds, setSelectedPrintItemIds] = useState([]);
+  const [encarregados, setEncarregados] = useState([]);
+  const [newEncarregado, setNewEncarregado] = useState({ id: "", nome: "" });
+  const [editingEncarregado, setEditingEncarregado] = useState(null);
 
   const isAdmin = profile?.role === "admin";
 
@@ -77,20 +80,23 @@ export default function Home() {
 
   async function loadData(userId) {
     setLoading(true);
-    const [{ data: p, error: pe }, { data: f, error: fe }, { data: e, error: ee }, { data: d, error: de }] = await Promise.all([
+    const [{ data: p, error: pe }, { data: f, error: fe }, { data: e, error: ee }, { data: d, error: de }, { data: pr, error: pre }] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("funcionarios").select("*").eq("ativo", true).order("nome"),
       supabase.from("epis").select("*").eq("ativo", true).order("nome"),
-      supabase.from("entregas").select(`id, funcionario_id, encarregado_id, data_entrega, observacao, assinatura, created_at, funcionarios(nome, matricula, funcao, empresa), entrega_itens(id, epi_id, quantidade, tamanho, ca, data_recebimento, data_devolucao, observacao, epis(nome, categoria))`).order("created_at", { ascending: false })
+      supabase.from("entregas").select(`id, funcionario_id, encarregado_id, data_entrega, observacao, assinatura, created_at, funcionarios(nome, matricula, funcao, empresa), entrega_itens(id, epi_id, quantidade, tamanho, ca, data_recebimento, data_devolucao, observacao, epis(nome, categoria))`).order("created_at", { ascending: false }),
+      supabase.from("profiles").select("*").order("nome")
     ]);
     if (pe) { console.error(pe); setMessage("Erro no perfil: " + pe.message); }
     if (fe) console.error(fe);
     if (ee) console.error(ee);
     if (de) console.error(de);
+    if (pre) console.error(pre);
     setProfile(p || { id: userId, nome: "Administrador", role: "admin" });
     setEmployees(f || []);
     setEpis(e || []);
     setDeliveries(d || []);
+    setEncarregados((pr || []).filter((x) => x.role === "encarregado"));
     setLoading(false);
   }
 
@@ -228,6 +234,47 @@ export default function Home() {
     setTab("historico");
     setMessage("Entrega registrada com sucesso.");
     setLoading(false);
+  }
+
+
+  async function saveEncarregado(e) {
+    e.preventDefault();
+    setMessage("");
+    const id = newEncarregado.id.trim();
+    const nome = newEncarregado.nome.trim();
+
+    if (!id) return setMessage("Informe o ID do usuário do Supabase Authentication.");
+    if (!nome) return setMessage("Informe o nome do encarregado.");
+
+    setLoading(true);
+    const payload = { id, nome, role: "encarregado" };
+    const query = editingEncarregado
+      ? supabase.from("profiles").update({ nome }).eq("id", editingEncarregado.id)
+      : supabase.from("profiles").insert(payload);
+    const { error } = await query;
+
+    if (error) {
+      setMessage("Erro ao salvar encarregado: " + error.message);
+    } else {
+      setMessage(editingEncarregado ? "Encarregado atualizado." : "Encarregado vinculado com sucesso.");
+      setNewEncarregado({ id: "", nome: "" });
+      setEditingEncarregado(null);
+      await loadData(session.user.id);
+    }
+    setLoading(false);
+  }
+
+  function startEditEncarregado(x) {
+    setEditingEncarregado(x);
+    setNewEncarregado({ id: x.id, nome: x.nome || "" });
+    setTab("encarregados");
+  }
+
+  async function removeEncarregado(x) {
+    if (!window.confirm(`Remover o perfil de ${x.nome}? Isso não exclui o usuário do Authentication.`)) return;
+    const { error } = await supabase.from("profiles").delete().eq("id", x.id);
+    if (error) setMessage("Erro: " + error.message);
+    else await loadData(session.user.id);
   }
 
   async function saveEmployee(e) {
@@ -372,6 +419,7 @@ export default function Home() {
           <button className={tab === "historico" ? "active" : ""} onClick={() => setTab("historico")}>Histórico</button>
           {isAdmin && <button className={tab === "funcionarios" ? "active" : ""} onClick={() => setTab("funcionarios")}>Funcionários</button>}
           {isAdmin && <button className={tab === "epis" ? "active" : ""} onClick={() => setTab("epis")}>EPIs</button>}
+          {isAdmin && <button className={tab === "encarregados" ? "active" : ""} onClick={() => setTab("encarregados")}>Encarregados</button>}
         </nav>
 
         {message && <div className="alert">{message}</div>}
@@ -447,12 +495,64 @@ export default function Home() {
           <section className="panel"><h1>Funcionários</h1><p>Cadastre e mantenha a lista que os encarregados usarão.</p><form onSubmit={saveEmployee} className="admin-form"><div className="grid2"><label>Nome*<input required value={newEmployee.nome} onChange={(e) => setNewEmployee({ ...newEmployee, nome: e.target.value })} /></label><label>Matrícula<input value={newEmployee.matricula} onChange={(e) => setNewEmployee({ ...newEmployee, matricula: e.target.value })} /></label><label>Função<input value={newEmployee.funcao} onChange={(e) => setNewEmployee({ ...newEmployee, funcao: e.target.value })} /></label><label>Empresa<input value={newEmployee.empresa} onChange={(e) => setNewEmployee({ ...newEmployee, empresa: e.target.value })} /></label><label>Setor<input value={newEmployee.setor} onChange={(e) => setNewEmployee({ ...newEmployee, setor: e.target.value })} /></label><label>Admissão<input type="date" value={newEmployee.data_admissao} onChange={(e) => setNewEmployee({ ...newEmployee, data_admissao: e.target.value })} /></label></div><button className="primary">{editingEmployee ? "Salvar alterações" : "Cadastrar funcionário"}</button>{editingEmployee && <button type="button" className="ghost" onClick={() => { setEditingEmployee(null); setNewEmployee(EMPTY_FUNC); }}>Cancelar edição</button>}</form><div className="admin-list">{employees.map((x) => <div className="admin-row" key={x.id}><div><strong>{x.nome}</strong><span>{x.matricula || "-"} · {x.funcao || "-"}</span></div><div><button className="ghost" onClick={() => startEditEmployee(x)}>Editar</button><button className="danger" onClick={() => deactivateEmployee(x)}>Desativar</button></div></div>)}</div></section>
         )}
 
+
+        {isAdmin && tab === "encarregados" && (
+          <section className="panel">
+            <div className="section-head">
+              <div>
+                <h1>Encarregados</h1>
+                <p>Gerencie quem poderá registrar entregas e consultar o histórico.</p>
+              </div>
+            </div>
+
+            <div className="info-box">
+              <strong>Como funciona nesta etapa</strong>
+              <span>O encarregado precisa primeiro existir em <b>Supabase Authentication</b>. Depois, informe aqui o ID do usuário para vincular o perfil. No próximo passo podemos automatizar essa criação.</span>
+            </div>
+
+            <form onSubmit={saveEncarregado} className="admin-form">
+              <div className="grid2">
+                <label>ID do usuário (UUID)*
+                  <input required value={newEncarregado.id} onChange={(e) => setNewEncarregado({ ...newEncarregado, id: e.target.value })} placeholder="Cole o User UID do Authentication" disabled={!!editingEncarregado} />
+                </label>
+                <label>Nome do encarregado*
+                  <input required value={newEncarregado.nome} onChange={(e) => setNewEncarregado({ ...newEncarregado, nome: e.target.value })} placeholder="Ex.: João Silva" />
+                </label>
+              </div>
+              <button className="primary" disabled={loading}>{editingEncarregado ? "Salvar alterações" : "Vincular encarregado"}</button>
+              {editingEncarregado && <button type="button" className="ghost" onClick={() => { setEditingEncarregado(null); setNewEncarregado({ id: "", nome: "" }); }}>Cancelar edição</button>}
+            </form>
+
+            <div className="admin-list">
+              {encarregados.map((x) => (
+                <div className="admin-row" key={x.id}>
+                  <div><strong>{x.nome || "Sem nome"}</strong><span>UID: {x.id}</span><span>Perfil: encarregado</span></div>
+                  <div><button className="ghost" onClick={() => startEditEncarregado(x)}>Editar</button><button className="danger" onClick={() => removeEncarregado(x)}>Remover perfil</button></div>
+                </div>
+              ))}
+              {!encarregados.length && <div className="muted">Nenhum encarregado vinculado ainda.</div>}
+            </div>
+          </section>
+        )}
+
         {isAdmin && tab === "epis" && (
           <section className="panel"><h1>Catálogo de EPIs</h1><p>Cadastre os equipamentos e seus CAs.</p><form onSubmit={saveEpi} className="admin-form"><div className="grid2"><label>Nome*<input required value={newEpi.nome} onChange={(e) => setNewEpi({ ...newEpi, nome: e.target.value })} /></label><label>Categoria<input value={newEpi.categoria} onChange={(e) => setNewEpi({ ...newEpi, categoria: e.target.value })} /></label><label>CA<input value={newEpi.ca} onChange={(e) => setNewEpi({ ...newEpi, ca: e.target.value })} /></label><label>Unidade<input value={newEpi.unidade} onChange={(e) => setNewEpi({ ...newEpi, unidade: e.target.value })} /></label></div><button className="primary">{editingEpi ? "Salvar alterações" : "Cadastrar EPI"}</button>{editingEpi && <button type="button" className="ghost" onClick={() => { setEditingEpi(null); setNewEpi(EMPTY_EPI); }}>Cancelar edição</button>}</form><div className="admin-list">{epis.map((x) => <div className="admin-row" key={x.id}><div><strong>{x.nome}</strong><span>{x.categoria || "-"} · CA {x.ca || "-"}</span></div><div><button className="ghost" onClick={() => startEditEpi(x)}>Editar</button><button className="danger" onClick={() => deactivateEpi(x)}>Desativar</button></div></div>)}</div></section>
         )}
       </main>
 
       <style jsx global>{`
+
+        .info-box {
+          display: grid;
+          gap: 6px;
+          padding: 14px;
+          margin: 16px 0;
+          border: 1px solid #dbe5dc;
+          border-radius: 12px;
+          background: #f5f9f5;
+        }
+        .info-box span { font-size: 14px; line-height: 1.45; }
+
         .modal-backdrop {
           position: fixed;
           inset: 0;
