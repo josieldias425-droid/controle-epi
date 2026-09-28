@@ -281,8 +281,7 @@ const [newAdministrador, setNewAdministrador] = useState({
   }
 
 
-  async function saveEncarregado(e) {
-    async function saveAdministrador() {
+  async function saveAdministrador() {
   setMessage("");
 
   const nome = newAdministrador.nome.trim();
@@ -343,6 +342,8 @@ const [newAdministrador, setNewAdministrador] = useState({
     loadData(session.user.id);
   }
 }
+
+  async function saveEncarregado(e) {
     e.preventDefault();
     setMessage("");
 
@@ -552,15 +553,8 @@ const [newAdministrador, setNewAdministrador] = useState({
           {isAdmin && <button className={tab === "funcionarios" ? "active" : ""} onClick={() => setTab("funcionarios")}>Funcionários</button>}
           {isAdmin && <button className={tab === "epis" ? "active" : ""} onClick={() => setTab("epis")}>EPIs</button>}
           {isAdmin && <button className={tab === "encarregados" ? "active" : ""} onClick={() => setTab("encarregados")}>Encarregados</button>}
+          {isAdmin && <button className={tab === "administradores" ? "active" : ""} onClick={() => setTab("administradores")}>👨‍💼 <span>Administradores</span></button>}
         </nav>
-{isAdmin && (
-  <button
-    className={tab === "administradores" ? "active" : ""}
-    onClick={() => setTab("administradores")}
-  >
-    👨‍💼 <span>Administradores</span>
-  </button>
-)}
 
         {message && <div className="alert">{message}</div>}
 
@@ -871,7 +865,21 @@ const [newAdministrador, setNewAdministrador] = useState({
       <style jsx global>{`
 
         .info-box {
-                .history-filter {
+          display: grid;
+          gap: 6px;
+          padding: 14px;
+          margin: 16px 0;
+          border: 1px solid #dbe5dc;
+          border-radius: 12px;
+          background: #f5f9f5;
+        }
+
+        .info-box span {
+          font-size: 14px;
+          line-height: 1.45;
+        }
+
+        .history-filter {
           display: flex;
           align-items: flex-end;
           gap: 10px;
@@ -885,7 +893,8 @@ const [newAdministrador, setNewAdministrador] = useState({
           font-weight: 600;
         }
 
-        .history-filter input {
+        .history-filter input,
+        .history-filter select {
           width: 100%;
           box-sizing: border-box;
         }
@@ -906,15 +915,6 @@ const [newAdministrador, setNewAdministrador] = useState({
             width: 100%;
           }
         }
-          display: grid;
-          gap: 6px;
-          padding: 14px;
-          margin: 16px 0;
-          border: 1px solid #dbe5dc;
-          border-radius: 12px;
-          background: #f5f9f5;
-        }
-        .info-box span { font-size: 14px; line-height: 1.45; }
 
         .modal-backdrop {
           position: fixed;
