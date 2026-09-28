@@ -1347,7 +1347,6 @@ const [newAdministrador, setNewAdministrador] = useState({
             align-items: stretch;
           }
         }
-      `}
         .topbar-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
         .topbar-logo { width: 118px; max-width: 32vw; height: auto; object-fit: contain; object-position: left center; }
 
@@ -1385,7 +1384,7 @@ const [newAdministrador, setNewAdministrador] = useState({
           .sheet-foot { margin-top: 2mm !important; font-size: 6.5pt !important; }
           .sheet, .sheet * { page-break-inside: avoid !important; break-inside: avoid-page !important; }
         }
-</style>
+      `}</style>
 
       {showSignaturePad && (
         <SignaturePad
