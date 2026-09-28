@@ -26,7 +26,7 @@ export default function Home() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [tab, setTab] = useState("entrega");
+  const [tab, setTab] = useState("inicio");
 
   const [login, setLogin] = useState({ email: "", password: "" });
   const [employees, setEmployees] = useState([]);
@@ -404,10 +404,28 @@ const [newAdministrador, setNewAdministrador] = useState({
   }
 
   async function removeEncarregado(x) {
-    if (!window.confirm(`Remover o perfil de ${x.nome}? Isso não exclui o usuário do Authentication.`)) return;
-    const { error } = await supabase.from("profiles").delete().eq("id", x.id);
-    if (error) setMessage("Erro: " + error.message);
-    else await loadData(session.user.id);
+    if (!window.confirm(`Remover definitivamente o acesso de ${x.nome}? O login também será desativado.`)) return;
+
+    setLoading(true);
+
+    const { data, error } = await supabase.functions.invoke("remover-encarregado", {
+      body: { userId: x.id }
+    });
+
+    setLoading(false);
+
+    if (error) {
+      setMessage("Erro ao remover encarregado: " + (error.message || "Não foi possível chamar a função."));
+      return;
+    }
+
+    if (data?.error) {
+      setMessage("Erro ao remover encarregado: " + data.error);
+      return;
+    }
+
+    setMessage("Encarregado removido com sucesso.");
+    await loadData(session.user.id);
   }
 
   async function saveEmployee(e) {
@@ -547,16 +565,79 @@ const [newAdministrador, setNewAdministrador] = useState({
           <button className="ghost" onClick={logout}>Sair</button>
         </header>
 
-        <nav className="tabs">
-          <button className={tab === "entrega" ? "active" : ""} onClick={() => setTab("entrega")}>Nova entrega</button>
-          <button className={tab === "historico" ? "active" : ""} onClick={() => setTab("historico")}>Histórico</button>
-          {isAdmin && <button className={tab === "funcionarios" ? "active" : ""} onClick={() => setTab("funcionarios")}>Funcionários</button>}
-          {isAdmin && <button className={tab === "epis" ? "active" : ""} onClick={() => setTab("epis")}>EPIs</button>}
-          {isAdmin && <button className={tab === "encarregados" ? "active" : ""} onClick={() => setTab("encarregados")}>Encarregados</button>}
+        <nav className="tabs modern-tabs">
+          <button className={tab === "inicio" ? "active" : ""} onClick={() => setTab("inicio")}>⌂ <span>Início</span></button>
+          <button className={tab === "entrega" ? "active" : ""} onClick={() => setTab("entrega")}>＋ <span>Nova entrega</span></button>
+          <button className={tab === "historico" ? "active" : ""} onClick={() => setTab("historico")}>▤ <span>Histórico</span></button>
+          {isAdmin && <button className={tab === "funcionarios" ? "active" : ""} onClick={() => setTab("funcionarios")}>♙ <span>Funcionários</span></button>}
+          {isAdmin && <button className={tab === "epis" ? "active" : ""} onClick={() => setTab("epis")}>◈ <span>EPIs</span></button>}
+          {isAdmin && <button className={tab === "encarregados" ? "active" : ""} onClick={() => setTab("encarregados")}>👷 <span>Encarregados</span></button>}
           {isAdmin && <button className={tab === "administradores" ? "active" : ""} onClick={() => setTab("administradores")}>👨‍💼 <span>Administradores</span></button>}
         </nav>
 
         {message && <div className="alert">{message}</div>}
+
+        {tab === "inicio" && (
+          <section className="dashboard">
+            <div className="dashboard-hero">
+              <div>
+                <span className="eyebrow">CONTROLE EPI</span>
+                <h1>Olá, {profile?.nome || "usuário"} 👋</h1>
+                <p>Gerencie entregas, funcionários e equipamentos de forma simples e organizada.</p>
+              </div>
+              <button className="primary big dashboard-main-action" onClick={() => setTab("entrega")}>
+                ＋ Nova entrega
+              </button>
+            </div>
+
+            <div className="stats-grid">
+              <div className="stat-card">
+                <span className="stat-icon">♙</span>
+                <div><strong>{employees.length}</strong><span>Funcionários ativos</span></div>
+              </div>
+              <div className="stat-card">
+                <span className="stat-icon">◈</span>
+                <div><strong>{epis.length}</strong><span>EPIs cadastrados</span></div>
+              </div>
+              <div className="stat-card">
+                <span className="stat-icon">▣</span>
+                <div><strong>{deliveries.length}</strong><span>Entregas registradas</span></div>
+              </div>
+              {isAdmin && (
+                <div className="stat-card">
+                  <span className="stat-icon">👨‍💼</span>
+                  <div><strong>{encarregados.length}</strong><span>Encarregados</span></div>
+                </div>
+              )}
+            </div>
+
+            <div className="dashboard-grid">
+              <div className="panel quick-panel">
+                <div className="section-head">
+                  <div>
+                    <h2>Acesso rápido</h2>
+                    <p>Escolha uma ação para continuar.</p>
+                  </div>
+                </div>
+                <div className="quick-actions">
+                  <button onClick={() => setTab("entrega")}><span>＋</span><strong>Registrar entrega</strong><small>Entregar EPI a um funcionário</small></button>
+                  <button onClick={() => setTab("historico")}><span>▤</span><strong>Consultar histórico</strong><small>Pesquisar entregas já registradas</small></button>
+                  {isAdmin && <button onClick={() => setTab("funcionarios")}><span>♙</span><strong>Funcionários</strong><small>Cadastrar e atualizar colaboradores</small></button>}
+                  {isAdmin && <button onClick={() => setTab("epis")}><span>◈</span><strong>Catálogo de EPIs</strong><small>Gerenciar equipamentos e CAs</small></button>}
+                </div>
+              </div>
+
+              <div className="panel profile-panel">
+                <div className="profile-avatar">{(profile?.nome || "U").charAt(0).toUpperCase()}</div>
+                <span className="eyebrow">SEU ACESSO</span>
+                <h2>{profile?.nome || session.user.email}</h2>
+                <p>{isAdmin ? "Administrador" : "Encarregado"}</p>
+                <div className="profile-email">{session.user.email}</div>
+                <div className="profile-badge">● Acesso ativo</div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {tab === "entrega" && (
           <section className="panel">
@@ -864,6 +945,212 @@ const [newAdministrador, setNewAdministrador] = useState({
 
       <style jsx global>{`
 
+        .modern-tabs {
+          display: flex;
+          gap: 6px;
+          padding: 8px;
+          overflow-x: auto;
+          scrollbar-width: thin;
+        }
+
+        .modern-tabs button {
+          border: 0;
+          background: transparent;
+          color: #59645e;
+          border-radius: 12px;
+          padding: 10px 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          white-space: nowrap;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .modern-tabs button:hover {
+          background: #f0f5f1;
+          color: #1f6b43;
+        }
+
+        .modern-tabs button.active {
+          background: #e6f3ea;
+          color: #1f6b43;
+          box-shadow: inset 0 0 0 1px #cce5d3;
+        }
+
+        .dashboard {
+          display: grid;
+          gap: 16px;
+        }
+
+        .dashboard-hero {
+          background: linear-gradient(135deg, #145c38 0%, #2d8756 100%);
+          color: white;
+          border-radius: 20px;
+          padding: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 20px;
+          box-shadow: 0 14px 35px rgba(20, 92, 56, .18);
+        }
+
+        .dashboard-hero h1 {
+          margin: 5px 0 8px;
+          font-size: clamp(24px, 4vw, 34px);
+        }
+
+        .dashboard-hero p {
+          margin: 0;
+          max-width: 650px;
+          opacity: .88;
+          line-height: 1.5;
+        }
+
+        .eyebrow {
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: .12em;
+          opacity: .72;
+        }
+
+        .dashboard-main-action {
+          flex: 0 0 auto;
+          background: white;
+          color: #17633c;
+        }
+
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+        }
+
+        .stat-card {
+          background: white;
+          border: 1px solid #e3eae5;
+          border-radius: 16px;
+          padding: 16px;
+          display: flex;
+          align-items: center;
+          gap: 13px;
+          box-shadow: 0 5px 18px rgba(20, 40, 25, .05);
+        }
+
+        .stat-icon {
+          width: 42px;
+          height: 42px;
+          display: grid;
+          place-items: center;
+          border-radius: 12px;
+          background: #edf7f0;
+          color: #1f7045;
+          font-size: 20px;
+        }
+
+        .stat-card div {
+          display: grid;
+          gap: 2px;
+        }
+
+        .stat-card strong {
+          font-size: 24px;
+          color: #183b29;
+        }
+
+        .stat-card div span {
+          font-size: 12px;
+          color: #6a756e;
+        }
+
+        .dashboard-grid {
+          display: grid;
+          grid-template-columns: 1.7fr 1fr;
+          gap: 16px;
+        }
+
+        .quick-panel,
+        .profile-panel {
+          margin: 0;
+        }
+
+        .quick-actions {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+
+        .quick-actions button {
+          text-align: left;
+          border: 1px solid #e1e9e3;
+          background: #fbfdfb;
+          border-radius: 14px;
+          padding: 15px;
+          cursor: pointer;
+          display: grid;
+          gap: 5px;
+          transition: .15s ease;
+        }
+
+        .quick-actions button:hover {
+          border-color: #afd0bb;
+          transform: translateY(-1px);
+        }
+
+        .quick-actions button > span {
+          color: #1f7045;
+          font-size: 22px;
+        }
+
+        .quick-actions small {
+          color: #748078;
+          line-height: 1.35;
+        }
+
+        .profile-panel {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .profile-avatar {
+          width: 58px;
+          height: 58px;
+          border-radius: 18px;
+          display: grid;
+          place-items: center;
+          background: #1f7045;
+          color: white;
+          font-size: 24px;
+          font-weight: 800;
+          margin-bottom: 14px;
+        }
+
+        .profile-panel h2 {
+          margin: 5px 0 3px;
+        }
+
+        .profile-panel p {
+          margin: 0 0 12px;
+          color: #66736b;
+        }
+
+        .profile-email {
+          width: 100%;
+          padding: 11px 12px;
+          background: #f5f8f6;
+          border-radius: 10px;
+          font-size: 13px;
+          overflow-wrap: anywhere;
+        }
+
+        .profile-badge {
+          margin-top: 12px;
+          font-size: 12px;
+          color: #267548;
+          font-weight: 700;
+        }
+
         .info-box {
           display: grid;
           gap: 6px;
@@ -913,6 +1200,44 @@ const [newAdministrador, setNewAdministrador] = useState({
 
           .history-filter .ghost {
             width: 100%;
+          }
+        }
+
+        @media (max-width: 900px) {
+          .stats-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .dashboard-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 600px) {
+          .dashboard-hero {
+            padding: 20px;
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .dashboard-main-action {
+            width: 100%;
+          }
+
+          .stats-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .quick-actions {
+            grid-template-columns: 1fr;
+          }
+
+          .modern-tabs {
+            margin: 0 -4px;
+          }
+
+          .modern-tabs button {
+            padding: 9px 10px;
           }
         }
 
