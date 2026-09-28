@@ -577,7 +577,7 @@ const [newAdministrador, setNewAdministrador] = useState({
       <main className="app-shell">
         <header className="topbar">
           <div className="topbar-brand">
-            <img src="/afc-logo.png" alt="AFC Geofísica" className="topbar-logo" />
+            <img src="/afc-logo-oficial.png" alt="AFC Geofísica" className="topbar-logo" />
             <div><strong>Controle EPI</strong><span>{profile?.nome || session.user.email}</span></div>
           </div>
           <button className="ghost" onClick={logout}>Sair</button>
@@ -1351,37 +1351,45 @@ const [newAdministrador, setNewAdministrador] = useState({
         .topbar-logo { width: 118px; max-width: 32vw; height: auto; object-fit: contain; object-position: left center; }
 
         @media print {
-          @page { size: A4 portrait; margin: 6mm; }
+          @page { size: A4 portrait; margin: 0; }
           html, body { width: 210mm !important; height: 297mm !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
           body * { visibility: hidden !important; }
           .print-layer, .print-layer * { visibility: visible !important; }
-          .print-layer { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: 285mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
+          .print-layer { position: absolute !important; inset: 0 !important; width: 210mm !important; height: 297mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
           .print-actions { display: none !important; }
-          .sheet { width: 198mm !important; height: 285mm !important; min-height: 285mm !important; max-height: 285mm !important; box-sizing: border-box !important; margin: 0 auto !important; padding: 5mm 5mm 4mm !important; overflow: hidden !important; page-break-after: avoid !important; break-after: avoid-page !important; font-size: 8.5pt !important; line-height: 1.15 !important; }
-          .sheet-head { height: 19mm !important; min-height: 19mm !important; margin-bottom: 2mm !important; align-items: center !important; gap: 8mm !important; }
-          .sheet-head h1 { margin: 0 0 1mm !important; font-size: 14pt !important; line-height: 1.05 !important; }
-          .sheet-head p { margin: 0 !important; font-size: 8pt !important; }
-          .company-logo { width: 118px !important; }
-          .employee-box { display: grid !important; grid-template-columns: 2.2fr 1fr 1.4fr !important; gap: 1.2mm 4mm !important; padding: 2.5mm !important; margin-bottom: 2mm !important; font-size: 8.2pt !important; line-height: 1.15 !important; }
-          .term-title { margin: 1.5mm 0 1mm !important; font-size: 9.5pt !important; }
-          .term { margin: 0 0 1.5mm !important; font-size: 7.5pt !important; line-height: 1.2 !important; }
-          .signature { min-height: 15mm !important; height: 15mm !important; padding: 1mm 0 !important; gap: 3mm !important; font-size: 8pt !important; }
-          .signature img { width: 43mm !important; height: 13mm !important; object-fit: contain !important; object-position: left center !important; }
-          .epi-print-table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; margin: 1mm 0 2mm !important; font-size: 7.1pt !important; }
-          .epi-print-table th, .epi-print-table td { border: 1px solid #aeb8b0 !important; padding: 1mm 0.8mm !important; height: 5.3mm !important; max-height: 5.3mm !important; vertical-align: middle !important; overflow: hidden !important; line-height: 1.05 !important; word-break: break-word !important; }
-          .epi-print-table th { font-size: 6.8pt !important; font-weight: 800 !important; white-space: normal !important; }
-          .epi-print-table th:nth-child(1), .epi-print-table td:nth-child(1) { width: 10mm !important; text-align: center !important; }
-          .epi-print-table th:nth-child(2), .epi-print-table td:nth-child(2) { width: 48mm !important; text-align: left !important; }
-          .epi-print-table th:nth-child(3), .epi-print-table td:nth-child(3) { width: 18mm !important; text-align: center !important; }
-          .epi-print-table th:nth-child(4), .epi-print-table td:nth-child(4) { width: 14mm !important; text-align: center !important; }
-          .epi-print-table th:nth-child(5), .epi-print-table td:nth-child(5) { width: 26mm !important; text-align: center !important; }
-          .epi-print-table th:nth-child(6), .epi-print-table td:nth-child(6) { width: 26mm !important; text-align: center !important; }
-          .epi-print-table th:nth-child(7), .epi-print-table td:nth-child(7) { width: 40mm !important; text-align: center !important; }
-          .epi-print-table .signature-cell { padding: 0.4mm !important; }
-          .epi-print-table .signature-cell img { display: block !important; width: 36mm !important; height: 8mm !important; margin: 0 auto !important; object-fit: contain !important; object-position: center !important; }
-          .catalog-title { margin: 1.5mm 0 1mm !important; font-size: 8.5pt !important; }
-          .catalog { gap: 1mm 4mm !important; font-size: 6.8pt !important; line-height: 1.1 !important; }
-          .sheet-foot { margin-top: 2mm !important; font-size: 6.5pt !important; }
+          .sheet { width: 210mm !important; height: 297mm !important; min-height: 297mm !important; max-height: 297mm !important; box-sizing: border-box !important; margin: 0 !important; padding: 7mm 8mm 5mm !important; overflow: hidden !important; page-break-after: avoid !important; page-break-before: avoid !important; break-after: avoid-page !important; break-before: avoid-page !important; font-size: 7.6pt !important; line-height: 1.08 !important; color: #111 !important; }
+          .sheet-head { height: 20mm !important; min-height: 20mm !important; display: flex !important; align-items: center !important; gap: 8mm !important; margin-bottom: 2mm !important; }
+          .company-logo { width: 30mm !important; flex: 0 0 30mm !important; }
+          .company-logo img { display: block !important; width: 27mm !important; height: 20mm !important; object-fit: contain !important; object-position: left center !important; }
+          .sheet-head h1 { flex: 1 !important; margin: 0 !important; text-align: center !important; font-size: 15pt !important; line-height: 1.08 !important; font-weight: 800 !important; }
+          .employee-grid { display: grid !important; grid-template-columns: 1.8fr 1fr !important; border: 1px solid #555 !important; margin-bottom: 2mm !important; }
+          .employee-grid > div { min-height: 9mm !important; padding: 2mm 2.2mm !important; border-right: 1px solid #777 !important; border-bottom: 1px solid #777 !important; font-size: 8pt !important; }
+          .employee-grid > div:nth-child(2n) { border-right: 0 !important; }
+          .employee-grid > div:nth-last-child(-n+2) { border-bottom: 0 !important; }
+          .term-box { border: 1px solid #555 !important; margin-bottom: 2mm !important; padding: 1.6mm 2.2mm 1.8mm !important; }
+          .term-box h2 { margin: 0 0 1mm !important; text-align: center !important; font-size: 9pt !important; }
+          .term-box p { margin: 0 0 1mm !important; font-size: 7.25pt !important; line-height: 1.15 !important; }
+          .term-box .term-subtitle { margin-bottom: .4mm !important; }
+          .employee-signature { min-height: 11mm !important; display: flex !important; align-items: center !important; justify-content: center !important; gap: 3mm !important; font-size: 8pt !important; }
+          .employee-signature img { width: 42mm !important; height: 10mm !important; object-fit: contain !important; object-position: center !important; }
+          .signature-line { width: 85mm !important; border-bottom: 1px solid #222 !important; height: 6mm !important; }
+          .epi-print-table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; margin: 0 0 2mm !important; font-size: 6.8pt !important; }
+          .epi-print-table th, .epi-print-table td { border: 1px solid #666 !important; padding: .7mm .7mm !important; height: 5mm !important; max-height: 5mm !important; vertical-align: middle !important; overflow: hidden !important; line-height: 1.02 !important; word-break: break-word !important; }
+          .epi-print-table th { font-size: 6.6pt !important; font-weight: 800 !important; text-align: center !important; }
+          .epi-print-table .col-qtd { width: 11mm !important; }
+          .epi-print-table .col-epi { width: 48mm !important; }
+          .epi-print-table .col-mat { width: 25mm !important; }
+          .epi-print-table .col-ca { width: 17mm !important; }
+          .epi-print-table .col-data { width: 27mm !important; }
+          .epi-print-table .col-devolucao { width: 27mm !important; }
+          .epi-print-table .col-assinatura { width: 47mm !important; }
+          .epi-print-table td:nth-child(1), .epi-print-table td:nth-child(3), .epi-print-table td:nth-child(4), .epi-print-table td:nth-child(5), .epi-print-table td:nth-child(6) { text-align: center !important; }
+          .epi-print-table .signature-cell { padding: .3mm !important; text-align: center !important; }
+          .epi-print-table .signature-cell img { display: block !important; width: 39mm !important; height: 4.5mm !important; margin: 0 auto !important; object-fit: contain !important; object-position: center !important; }
+          .catalog-title { margin: 1mm 0 0 !important; border: 1px solid #555 !important; border-bottom: 0 !important; text-align: center !important; font-size: 7.8pt !important; padding: 1mm !important; }
+          .catalog-afc { border: 1px solid #555 !important; font-size: 6.1pt !important; line-height: 1.08 !important; }
+          .catalog-afc > div { padding: 1mm 2mm !important; border-bottom: 1px solid #888 !important; }
+          .catalog-afc > div:last-child { border-bottom: 0 !important; }
           .sheet, .sheet * { page-break-inside: avoid !important; break-inside: avoid-page !important; }
         }
       `}</style>
@@ -1580,71 +1588,67 @@ function SignaturePad({ onSave, onClose, initialSignature = "" }) {
 function Printable({ delivery }) {
   const f = delivery.funcionarios || {};
   const items = delivery.entrega_itens || [];
-
   const visibleItems = items.slice(0, 16);
   const emptyRows = Math.max(0, 16 - visibleItems.length);
 
   return (
     <div className="sheet">
-      <div className="sheet-head" style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
-        <div className="company-logo" style={{ flex: "0 0 auto", width: "118px" }}>
-          <img
-            src="/afc-logo.png"
-            alt="AFC Geofísica"
-            style={{ width: "100%", height: "auto", maxHeight: "64px", objectFit: "contain", objectPosition: "left center" }}
-          />
+      <div className="sheet-head">
+        <div className="company-logo">
+          <img src="/afc-logo-oficial.png" alt="AFC Geofísica" />
         </div>
-        <div style={{ flex: 1 }}>
-          <h1>FICHA DE EQUIPAMENTO PROTEÇÃO INDIVIDUAL</h1>
-          <p>Controle de entrega e devolução de EPI</p>
+        <h1>FICHA DE EQUIPAMENTO PROTEÇÃO INDIVIDUAL</h1>
+      </div>
+
+      <div className="employee-grid">
+        <div><b>NOME:</b> {f.nome || ""}</div>
+        <div><b>DATA ADMISSÃO:</b> {formatDate(f.data_admissao)}</div>
+        <div><b>FUNÇÃO:</b> {f.funcao || ""}</div>
+        <div><b>N° DE REGISTRO:</b> {f.matricula || ""}</div>
+      </div>
+
+      <section className="term-box">
+        <h2>TERMO DE COMPROMISSO</h2>
+        <p>Declaro que recebi orientação sobre o uso correto do EPI fornecido pela empresa e limitações de proteção que o EPI oferece, assim como da obrigatoriedade de seu uso, estando ciente da legislação (Portaria n° 3214 de 08/06/1978, do MTE, NR 06, item 6.6, abaixo descriminada e comprometendo-me a cumpri-la).</p>
+        <p className="term-subtitle">Cabe ao empregado:</p>
+        <p>a) usar o fornecido pela organização, observado o disposto no item 6.5.2;<br />
+        b) utilizar apenas para a finalidade a que se destina;<br />
+        c) responsabilizar-se pela limpeza, guarda e conservação;<br />
+        d) comunicar à organização quando extraviado, danificado ou qualquer alteração que o torne impróprio para o uso e<br />
+        e) cumprir as determinações da organização sobre o uso adequado.</p>
+        <p>CLT – Artigo 462, parágrafo 1: Em caso de dano causado pelo empregado, o desconto será lícito desde que esta possibilidade tenha sido acordada, ou na ocorrência de dolo do empregado.</p>
+        <div className="employee-signature">
+          <span>Assinatura:</span>
+          {delivery.assinatura ? <img src={delivery.assinatura} alt="Assinatura do empregado" /> : <span className="signature-line" />}
         </div>
-      </div>
-
-      <div className="employee-box">
-        <div><b>Nome:</b> {f.nome || ""}</div>
-        <div><b>Admissão:</b> {formatDate(f.data_admissao)}</div>
-        <div><b>Função:</b> {f.funcao || ""}</div>
-        <div><b>Registro:</b> {f.matricula || ""}</div>
-        <div><b>Empresa:</b> {f.empresa || ""}</div>
-        <div><b>Setor:</b> {f.setor || ""}</div>
-      </div>
-
-      <h2 className="term-title">TERMO DE COMPROMISSO</h2>
-
-      <p className="term">
-        Declaro ter recebido gratuitamente os Equipamentos de Proteção Individual relacionados nesta ficha, em perfeitas condições de uso. Comprometo-me a utilizá-los corretamente durante as atividades, zelar pela sua conservação e comunicar qualquer dano, perda ou necessidade de substituição, conforme as orientações de segurança da empresa.
-      </p>
-
-      <div className="signature" style={{ minHeight: "62px", display: "flex", alignItems: "center", gap: "14px", padding: "8px 0" }}>
-        <span style={{ whiteSpace: "nowrap" }}>Assinatura do empregado:</span>
-        {delivery.assinatura ? (
-          <img src={delivery.assinatura} alt="Assinatura do empregado" style={{ width: "160px", height: "52px", objectFit: "contain", objectPosition: "left center" }} />
-        ) : (
-          <span style={{ flex: 1, borderBottom: "1px solid #222", height: "34px" }} />
-        )}
-      </div>
+      </section>
 
       <table className="epi-print-table">
+        <colgroup>
+          <col className="col-qtd" />
+          <col className="col-epi" />
+          <col className="col-mat" />
+          <col className="col-ca" />
+          <col className="col-data" />
+          <col className="col-devolucao" />
+          <col className="col-assinatura" />
+        </colgroup>
         <thead>
           <tr>
             <th>Quantidade</th>
             <th>EPI marca/modelo</th>
             <th>Matrícula</th>
             <th>CA</th>
-            <th>Data do Recebimento</th>
-            <th>Data da Devolução</th>
-            <th>Assinatura</th>
+            <th>Data do<br />Recebimento</th>
+            <th>Data da<br />Devolução</th>
+            <th>Assinatura do empregado</th>
           </tr>
         </thead>
-
         <tbody>
           {visibleItems.map((item, i) => (
             <tr key={item.id || `${item.epi_id || "epi"}-${i}`}>
               <td>{item.quantidade}</td>
-              <td>
-                {item.epis?.nome || ""}
-                {item.tamanho ? ` — Tam. ${item.tamanho}` : ""}
-              </td>
+              <td>{item.epis?.nome || ""}{item.tamanho ? ` — Tam. ${item.tamanho}` : ""}</td>
               <td>{f.matricula || ""}</td>
               <td>{item.ca || ""}</td>
               <td>{formatDate(item.data_recebimento || delivery.data_entrega)}</td>
@@ -1652,37 +1656,21 @@ function Printable({ delivery }) {
               <td className="signature-cell">{delivery.assinatura ? <img src={delivery.assinatura} alt="Assinatura" /> : ""}</td>
             </tr>
           ))}
-
           {Array.from({ length: emptyRows }).map((_, i) => (
-            <tr key={`empty-${i}`}>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
+            <tr key={`empty-${i}`}><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
           ))}
         </tbody>
       </table>
 
-      <h2 className="catalog-title">
-        Catálogo de Descrição dos Equipamentos de Proteção Individual
-      </h2>
-
-      <div className="catalog" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px 14px" }}>
-        <span><b>Capacete de segurança:</b> protege a cabeça contra impactos e queda de objetos.</span>
-        <span><b>Luva de proteção:</b> protege as mãos contra abrasão, sujeira e outros riscos da atividade.</span>
-        <span><b>Proteção auricular:</b> reduz a exposição ao ruído e ajuda a preservar a audição.</span>
-        <span><b>Botina de segurança:</b> protege os pés contra impactos, perfurações e outros riscos.</span>
-        <span><b>Óculos de segurança:</b> protegem os olhos contra poeira, partículas e respingos.</span>
-        <span><b>Perneira:</b> protege pernas e tornozelos contra cortes, impactos e outros riscos.</span>
-        <span><b>Luva anticorte:</b> protege as mãos durante atividades com materiais ou ferramentas cortantes.</span>
-      </div>
-
-      <div className="sheet-foot">
-        Documento gerado pelo Controle EPI · Data da última entrega: {formatDate(delivery.data_entrega)}
+      <h2 className="catalog-title">Catálogo de Descrição dos Equipamentos de Proteção Individual</h2>
+      <div className="catalog-afc">
+        <div><b>Capacete-</b> Capacete de segurança, classe A, tipo II, com suspensões: Fika Firme (STAZ-ON), Fas-Trac (com catraca) e One Touch. Todas com e sem jugular ou Fas-Trac Force com queixeira.</div>
+        <div><b>Luva de malha-</b> Luva de segurança, confeccionada em fios composto por adição, condensação de copolímeros transesterificados elastoméricos, tendo componentes adípico hexametilenodiamina denominados terfitálicos com ésters e fibras orion monoméricas, ligados por cabalência com revestimento de borracha nitrílica na palma.</div>
+        <div><b>Protetor auricular-</b> Protetor auditivo tipo plugue, confeccionado em silicone de grau farmacêutico, do tipo inserção, composto de um eixo de três flanges maciço e cônico, todas de dimensões variáveis, contendo um orifício no seu interior, moldável a diferentes canais auditivos.</div>
+        <div><b>Botina de Segurança-</b> Confeccionado em vaqueta preta, com elástico nas laterais, dorso acolchoado, palmilha em couro, solado poliuretano (PU) bidensidade.</div>
+        <div><b>Óculos de Segurança-</b> Constituídos de armação e visor confeccionado em uma única peça de policarbonato incolor, amarelo, cinza ou verde. As hastes, do tipo espátula, são confeccionadas do mesmo material da armação e são fixas às extremidades do visor através de parafusos metálicos e possuem borracha macia preta nas pontas.</div>
+        <div><b>Perneira-</b> Perneira de proteção sem joelheira contra corte e picadas de animais peçonhentos confeccionada em couro sintético.</div>
+        <div><b>Luva anti corte -</b> Luva de segurança confeccionada em fibras sintéticas, HPPE (polietileno) 13 gauge, revestida em nitrila tipo sandy (areia) na palma e ponta dos dedos, punho com inserção de fibras elásticas e acabamento em fibras sintéticas.</div>
       </div>
     </div>
   );
