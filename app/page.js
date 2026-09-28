@@ -1500,6 +1500,7 @@ function SignaturePad({ initialValue, onCancel, onSave }) {
   const canvasRef = useRef(null);
   const drawingRef = useRef(false);
   const hasInkRef = useRef(false);
+  const [hasInk, setHasInk] = useState(Boolean(initialValue));
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1528,6 +1529,7 @@ function SignaturePad({ initialValue, onCancel, onSave }) {
       img.onload = () => {
         ctx.drawImage(img, 0, 0, width, height);
         hasInkRef.current = true;
+        setHasInk(true);
       };
       img.src = initialValue;
     }
@@ -1547,6 +1549,7 @@ function SignaturePad({ initialValue, onCancel, onSave }) {
     event.preventDefault();
     drawingRef.current = true;
     hasInkRef.current = true;
+    setHasInk(true);
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const p = pointFromEvent(event);
@@ -1579,10 +1582,11 @@ function SignaturePad({ initialValue, onCancel, onSave }) {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
     hasInkRef.current = false;
+    setHasInk(false);
   }
 
   function save() {
-    if (!hasInkRef.current) return;
+    if (!hasInk) return;
     onSave(canvasRef.current.toDataURL("image/png"));
   }
 
@@ -1611,7 +1615,7 @@ function SignaturePad({ initialValue, onCancel, onSave }) {
 
         <div className="signature-modal-actions">
           <button type="button" className="ghost" onClick={clear}>Limpar</button>
-          <button type="button" className="primary big" disabled={!hasInkRef.current} onClick={save}>Usar assinatura</button>
+          <button type="button" className="primary big" disabled={!hasInk} onClick={save}>Usar assinatura</button>
         </div>
       </div>
     </div>
