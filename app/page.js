@@ -576,7 +576,10 @@ const [newAdministrador, setNewAdministrador] = useState({
     <>
       <main className="app-shell">
         <header className="topbar">
-          <div><div className="brand small-brand">EPI</div><div><strong>Controle EPI</strong><span>{profile?.nome || session.user.email}</span></div></div>
+          <div className="topbar-brand">
+            <img src="/afc-logo.png" alt="AFC Geofísica" className="topbar-logo" />
+            <div><strong>Controle EPI</strong><span>{profile?.nome || session.user.email}</span></div>
+          </div>
           <button className="ghost" onClick={logout}>Sair</button>
         </header>
 
@@ -586,7 +589,7 @@ const [newAdministrador, setNewAdministrador] = useState({
           <button className={tab === "historico" ? "active" : ""} onClick={() => setTab("historico")}>▤ <span>Histórico</span></button>
           {isAdmin && <button className={tab === "funcionarios" ? "active" : ""} onClick={() => setTab("funcionarios")}>♙ <span>Funcionários</span></button>}
           {isAdmin && <button className={tab === "epis" ? "active" : ""} onClick={() => setTab("epis")}>◈ <span>EPIs</span></button>}
-          {isAdmin && <button className={tab === "encarregados" ? "active" : ""} onClick={() => setTab("encarregados")}>👷 <span>Encarregados</span></button>}
+          {isAdmin && <button className={tab === "encarregados" ? "active" : ""} onClick={() => setTab("encarregados")}><span>Encarregados</span></button>}
           {isAdmin && <button className={tab === "administradores" ? "active" : ""} onClick={() => setTab("administradores")}>👨‍💼 <span>Administradores</span></button>}
         </nav>
 
@@ -1344,7 +1347,45 @@ const [newAdministrador, setNewAdministrador] = useState({
             align-items: stretch;
           }
         }
-      `}</style>
+      `}
+        .topbar-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .topbar-logo { width: 118px; max-width: 32vw; height: auto; object-fit: contain; object-position: left center; }
+
+        @media print {
+          @page { size: A4 portrait; margin: 6mm; }
+          html, body { width: 210mm !important; height: 297mm !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+          body * { visibility: hidden !important; }
+          .print-layer, .print-layer * { visibility: visible !important; }
+          .print-layer { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: 285mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
+          .print-actions { display: none !important; }
+          .sheet { width: 198mm !important; height: 285mm !important; min-height: 285mm !important; max-height: 285mm !important; box-sizing: border-box !important; margin: 0 auto !important; padding: 5mm 5mm 4mm !important; overflow: hidden !important; page-break-after: avoid !important; break-after: avoid-page !important; font-size: 8.5pt !important; line-height: 1.15 !important; }
+          .sheet-head { height: 19mm !important; min-height: 19mm !important; margin-bottom: 2mm !important; align-items: center !important; gap: 8mm !important; }
+          .sheet-head h1 { margin: 0 0 1mm !important; font-size: 14pt !important; line-height: 1.05 !important; }
+          .sheet-head p { margin: 0 !important; font-size: 8pt !important; }
+          .company-logo { width: 118px !important; }
+          .employee-box { display: grid !important; grid-template-columns: 2.2fr 1fr 1.4fr !important; gap: 1.2mm 4mm !important; padding: 2.5mm !important; margin-bottom: 2mm !important; font-size: 8.2pt !important; line-height: 1.15 !important; }
+          .term-title { margin: 1.5mm 0 1mm !important; font-size: 9.5pt !important; }
+          .term { margin: 0 0 1.5mm !important; font-size: 7.5pt !important; line-height: 1.2 !important; }
+          .signature { min-height: 15mm !important; height: 15mm !important; padding: 1mm 0 !important; gap: 3mm !important; font-size: 8pt !important; }
+          .signature img { width: 43mm !important; height: 13mm !important; object-fit: contain !important; object-position: left center !important; }
+          .epi-print-table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; margin: 1mm 0 2mm !important; font-size: 7.1pt !important; }
+          .epi-print-table th, .epi-print-table td { border: 1px solid #aeb8b0 !important; padding: 1mm 0.8mm !important; height: 5.3mm !important; max-height: 5.3mm !important; vertical-align: middle !important; overflow: hidden !important; line-height: 1.05 !important; word-break: break-word !important; }
+          .epi-print-table th { font-size: 6.8pt !important; font-weight: 800 !important; white-space: normal !important; }
+          .epi-print-table th:nth-child(1), .epi-print-table td:nth-child(1) { width: 10mm !important; text-align: center !important; }
+          .epi-print-table th:nth-child(2), .epi-print-table td:nth-child(2) { width: 48mm !important; text-align: left !important; }
+          .epi-print-table th:nth-child(3), .epi-print-table td:nth-child(3) { width: 18mm !important; text-align: center !important; }
+          .epi-print-table th:nth-child(4), .epi-print-table td:nth-child(4) { width: 14mm !important; text-align: center !important; }
+          .epi-print-table th:nth-child(5), .epi-print-table td:nth-child(5) { width: 26mm !important; text-align: center !important; }
+          .epi-print-table th:nth-child(6), .epi-print-table td:nth-child(6) { width: 26mm !important; text-align: center !important; }
+          .epi-print-table th:nth-child(7), .epi-print-table td:nth-child(7) { width: 40mm !important; text-align: center !important; }
+          .epi-print-table .signature-cell { padding: 0.4mm !important; }
+          .epi-print-table .signature-cell img { display: block !important; width: 36mm !important; height: 8mm !important; margin: 0 auto !important; object-fit: contain !important; object-position: center !important; }
+          .catalog-title { margin: 1.5mm 0 1mm !important; font-size: 8.5pt !important; }
+          .catalog { gap: 1mm 4mm !important; font-size: 6.8pt !important; line-height: 1.1 !important; }
+          .sheet-foot { margin-top: 2mm !important; font-size: 6.5pt !important; }
+          .sheet, .sheet * { page-break-inside: avoid !important; break-inside: avoid-page !important; }
+        }
+</style>
 
       {showSignaturePad && (
         <SignaturePad
@@ -1547,11 +1588,11 @@ function Printable({ delivery }) {
   return (
     <div className="sheet">
       <div className="sheet-head" style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
-        <div className="company-logo" style={{ flex: "0 0 auto", width: "80px" }}>
+        <div className="company-logo" style={{ flex: "0 0 auto", width: "118px" }}>
           <img
             src="/afc-logo.png"
             alt="AFC Geofísica"
-            style={{ width: "100%", height: "auto", maxHeight: "58px", objectFit: "contain", objectPosition: "left top" }}
+            style={{ width: "100%", height: "auto", maxHeight: "64px", objectFit: "contain", objectPosition: "left center" }}
           />
         </div>
         <div style={{ flex: 1 }}>
@@ -1584,7 +1625,7 @@ function Printable({ delivery }) {
         )}
       </div>
 
-      <table>
+      <table className="epi-print-table">
         <thead>
           <tr>
             <th>Quantidade</th>
@@ -1609,7 +1650,7 @@ function Printable({ delivery }) {
               <td>{item.ca || ""}</td>
               <td>{formatDate(item.data_recebimento || delivery.data_entrega)}</td>
               <td>{formatDate(item.data_devolucao)}</td>
-              <td style={{ padding: "2px" }}>{delivery.assinatura ? <img src={delivery.assinatura} alt="Assinatura" style={{ width: "74px", height: "30px", objectFit: "contain" }} /> : ""}</td>
+              <td className="signature-cell">{delivery.assinatura ? <img src={delivery.assinatura} alt="Assinatura" /> : ""}</td>
             </tr>
           ))}
 
