@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -38,6 +38,8 @@ export default function Home() {
   const [deliveryDate, setDeliveryDate] = useState(today());
   const [observation, setObservation] = useState("");
   const [deliveryItems, setDeliveryItems] = useState([]);
+  const [signatureData, setSignatureData] = useState("");
+  const [showSignaturePad, setShowSignaturePad] = useState(false);
 
   const [newEmployee, setNewEmployee] = useState(EMPTY_FUNC);
   const [editingEmployee, setEditingEmployee] = useState(null);
@@ -210,6 +212,8 @@ const [newAdministrador, setNewAdministrador] = useState({
     setSelectedEmployee(employee);
     setEmployeeSearch(employee.nome);
     setDeliveryItems([]);
+    setSignatureData("");
+    setShowSignaturePad(false);
     setMessage("");
   }
 
@@ -231,6 +235,7 @@ const [newAdministrador, setNewAdministrador] = useState({
     setMessage("");
     if (!selectedEmployee) return setMessage("Pesquise e selecione um funcionário.");
     if (!deliveryItems.length) return setMessage("Adicione pelo menos um EPI.");
+    if (!signatureData) return setMessage("Peça ao funcionário para assinar antes de salvar a entrega.");
 
     setLoading(true);
     const { data: delivery, error } = await supabase.from("entregas").insert({
@@ -238,7 +243,7 @@ const [newAdministrador, setNewAdministrador] = useState({
       encarregado_id: session.user.id,
       data_entrega: deliveryDate || today(),
       observacao: observation || null,
-      assinatura: null
+      assinatura: signatureData
     }).select().single();
 
     if (error) {
@@ -273,6 +278,8 @@ const [newAdministrador, setNewAdministrador] = useState({
     setSelectedEmployee(null);
     setEmployeeSearch("");
     setDeliveryItems([]);
+    setSignatureData("");
+    setShowSignaturePad(false);
     setObservation("");
     setDeliveryDate(today());
     setTab("historico");
@@ -654,6 +661,16 @@ const [newAdministrador, setNewAdministrador] = useState({
                 <h2>Adicionar EPI</h2>
                 <div className="epi-picker">{epis.map((epi) => <button type="button" key={epi.id} onClick={() => addEpiRow(epi)} disabled={deliveryItems.some((x) => x.epi_id === epi.id)}>+ {epi.nome}{epi.ca ? ` · CA ${epi.ca}` : ""}</button>)}</div>
                 {deliveryItems.length > 0 && <div className="delivery-list">{deliveryItems.map((item, index) => <div className="delivery-row" key={item.epi_id}><div className="row-title"><strong>{item.nome}</strong><button type="button" className="danger-link" onClick={() => removeDeliveryItem(index)}>remover</button></div><div className="grid3"><label>Qtd.<input type="number" min="1" value={item.quantidade} onChange={(e) => updateDeliveryItem(index, "quantidade", e.target.value)} /></label><label>Tamanho<input value={item.tamanho} onChange={(e) => updateDeliveryItem(index, "tamanho", e.target.value)} placeholder="Ex.: M, 40" /></label><label>CA<input value={item.ca} onChange={(e) => updateDeliveryItem(index, "ca", e.target.value)} /></label></div><label>Data de devolução<input type="date" value={item.data_devolucao} onChange={(e) => updateDeliveryItem(index, "data_devolucao", e.target.value)} /></label></div>)}</div>}
+                <div className="signature-box">
+                  <div>
+                    <strong>Assinatura do funcionário</strong>
+                    <span>{signatureData ? "Assinatura registrada nesta entrega." : "O funcionário deve assinar na tela antes de salvar."}</span>
+                  </div>
+                  <div className="signature-actions">
+                    {signatureData && <img src={signatureData} alt="Assinatura registrada" className="signature-preview" />}
+                    <button type="button" className="ghost" onClick={() => setShowSignaturePad(true)}>{signatureData ? "Refazer assinatura" : "Assinar na tela"}</button>
+                  </div>
+                </div>
                 <button className="primary big" disabled={loading}>{loading ? "Salvando..." : "Salvar entrega"}</button>
               </form>
             )}
@@ -1214,6 +1231,24 @@ const [newAdministrador, setNewAdministrador] = useState({
         }
 
         @media (max-width: 600px) {
+          .signature-box {
+            align-items: stretch;
+            flex-direction: column;
+          }
+
+          .signature-actions {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .signature-preview {
+            width: 100%;
+          }
+
+          .signature-canvas {
+            height: 200px;
+          }
+
           .dashboard-hero {
             padding: 20px;
             flex-direction: column;
@@ -1239,6 +1274,69 @@ const [newAdministrador, setNewAdministrador] = useState({
           .modern-tabs button {
             padding: 9px 10px;
           }
+        }
+
+        .signature-box {
+          margin: 18px 0;
+          padding: 15px;
+          border: 1px solid #dbe5dc;
+          border-radius: 14px;
+          background: #f8fbf9;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+        }
+
+        .signature-box > div:first-child {
+          display: grid;
+          gap: 4px;
+        }
+
+        .signature-box span {
+          font-size: 13px;
+          color: #66736b;
+        }
+
+        .signature-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .signature-preview {
+          width: 150px;
+          height: 54px;
+          object-fit: contain;
+          background: white;
+          border: 1px solid #d8dfda;
+          border-radius: 8px;
+        }
+
+        .signature-canvas-wrap {
+          background: white;
+          border: 1px solid #d8dfda;
+          border-radius: 12px;
+          padding: 8px;
+          touch-action: none;
+        }
+
+        .signature-canvas {
+          display: block;
+          width: 100%;
+          height: 220px;
+          touch-action: none;
+          cursor: crosshair;
+          background: #fff;
+          border-radius: 8px;
+        }
+
+        .signature-modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          margin-top: 14px;
+          flex-wrap: wrap;
         }
 
         .modal-backdrop {
@@ -1309,6 +1407,17 @@ const [newAdministrador, setNewAdministrador] = useState({
           }
         }
       `}</style>
+
+      {showSignaturePad && (
+        <SignaturePad
+          initialValue={signatureData}
+          onCancel={() => setShowSignaturePad(false)}
+          onSave={(value) => {
+            setSignatureData(value);
+            setShowSignaturePad(false);
+          }}
+        />
+      )}
 
       {printGroup && (
         <div className="modal-backdrop no-print">
@@ -1387,6 +1496,128 @@ const [newAdministrador, setNewAdministrador] = useState({
   );
 }
 
+function SignaturePad({ initialValue, onCancel, onSave }) {
+  const canvasRef = useRef(null);
+  const drawingRef = useRef(false);
+  const hasInkRef = useRef(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    const width = Math.min(900, Math.max(320, canvas.parentElement?.clientWidth || 700));
+    const height = 220;
+
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+
+    const ctx = canvas.getContext("2d");
+    ctx.scale(ratio, ratio);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.strokeStyle = "#17231c";
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    if (initialValue) {
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, width, height);
+        hasInkRef.current = true;
+      };
+      img.src = initialValue;
+    }
+  }, [initialValue]);
+
+  function pointFromEvent(event) {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const source = event.touches?.[0] || event;
+    return {
+      x: (source.clientX - rect.left) * (canvas.width / rect.width) / Math.max(window.devicePixelRatio || 1, 1),
+      y: (source.clientY - rect.top) * (canvas.height / rect.height) / Math.max(window.devicePixelRatio || 1, 1)
+    };
+  }
+
+  function startDrawing(event) {
+    event.preventDefault();
+    drawingRef.current = true;
+    hasInkRef.current = true;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const p = pointFromEvent(event);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  }
+
+  function draw(event) {
+    if (!drawingRef.current) return;
+    event.preventDefault();
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const p = pointFromEvent(event);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  }
+
+  function stopDrawing(event) {
+    if (event) event.preventDefault();
+    drawingRef.current = false;
+  }
+
+  function clear() {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    const width = canvas.width / ratio;
+    const height = canvas.height / ratio;
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+    hasInkRef.current = false;
+  }
+
+  function save() {
+    if (!hasInkRef.current) return;
+    onSave(canvasRef.current.toDataURL("image/png"));
+  }
+
+  return (
+    <div className="modal-backdrop no-print">
+      <div className="print-select-card signature-modal">
+        <div className="section-head">
+          <div>
+            <h2>Assinatura do funcionário</h2>
+            <p>Peça ao funcionário para assinar com o dedo no espaço abaixo.</p>
+          </div>
+          <button type="button" className="ghost" onClick={onCancel}>Fechar</button>
+        </div>
+
+        <div className="signature-canvas-wrap">
+          <canvas
+            ref={canvasRef}
+            className="signature-canvas"
+            onPointerDown={startDrawing}
+            onPointerMove={draw}
+            onPointerUp={stopDrawing}
+            onPointerCancel={stopDrawing}
+            onPointerLeave={stopDrawing}
+          />
+        </div>
+
+        <div className="signature-modal-actions">
+          <button type="button" className="ghost" onClick={clear}>Limpar</button>
+          <button type="button" className="primary big" disabled={!hasInkRef.current} onClick={save}>Usar assinatura</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Printable({ delivery }) {
   const f = delivery.funcionarios || {};
   const items = delivery.entrega_itens || [];
@@ -1426,7 +1657,14 @@ function Printable({ delivery }) {
       </p>
 
       <div className="signature">
-        Assinatura do empregado: ______________________________________________
+        {delivery.assinatura ? (
+          <div className="print-signature">
+            <span>Assinatura do empregado:</span>
+            <img src={delivery.assinatura} alt="Assinatura do empregado" />
+          </div>
+        ) : (
+          "Assinatura do empregado: ______________________________________________"
+        )}
       </div>
 
       <table>
