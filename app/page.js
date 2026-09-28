@@ -955,29 +955,83 @@ const [newAdministrador, setNewAdministrador] = useState({
         .afc-print-logo { width: 120px; max-height: 70px; object-fit: contain; object-position: left center; flex: 0 0 auto; }
         .sheet-head { display: flex; align-items: flex-start; gap: 14px; }
         .sheet-head > div { flex: 1; }
+
+        /* Impressão A4: aproveita praticamente toda a folha, sem deixar a ficha minúscula. */
         @media print {
-          @page { size: A4 portrait; margin: 7mm; }
-          html, body { width: 210mm; height: 297mm; }
-          .print-layer { width: 196mm !important; max-width: 196mm !important; }
-          .sheet { width: 196mm !important; min-height: 0 !important; max-height: 283mm !important; overflow: hidden !important; box-sizing: border-box; }
-          .sheet-head { gap: 8px !important; }
-          .afc-print-logo { width: 105px !important; max-height: 58px !important; }
-          .sheet h1 { font-size: 14px !important; margin: 0 0 2px !important; }
-          .sheet p, .sheet .term { font-size: 8px !important; line-height: 1.18 !important; }
-          .employee-box { font-size: 8px !important; padding: 5px !important; gap: 4px !important; }
-          .term-title, .catalog-title { font-size: 9px !important; margin: 5px 0 3px !important; }
-          .signature { font-size: 8px !important; margin: 4px 0 !important; }
-          .sheet table { font-size: 7.5px !important; table-layout: fixed; width: 100%; }
-          .sheet table th, .sheet table td { padding: 2px 3px !important; height: 15px !important; line-height: 1.05 !important; }
-          .sheet table th:nth-child(1) { width: 8%; }
-          .sheet table th:nth-child(2) { width: 28%; }
-          .sheet table th:nth-child(3) { width: 14%; }
+          @page { size: A4 portrait; margin: 0; }
+          html, body { width: 210mm !important; height: 297mm !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+          .print-layer { width: 210mm !important; max-width: 210mm !important; margin: 0 !important; padding: 0 !important; }
+          .sheet {
+            width: 210mm !important;
+            height: 297mm !important;
+            min-height: 297mm !important;
+            max-height: 297mm !important;
+            margin: 0 !important;
+            padding: 9mm 9mm 7mm !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+          }
+          .sheet-head { gap: 10px !important; align-items: center !important; }
+          .company-logo { width: 34mm !important; height: 18mm !important; }
+          .company-logo img { max-height: 18mm !important; }
+          .sheet-head h1 { font-size: 17px !important; line-height: 1.12 !important; margin: 0 0 2px !important; }
+          .sheet-head p { font-size: 10px !important; margin: 1mm 0 0 !important; }
+          .employee-box {
+            grid-template-columns: 2fr 1fr 1fr !important;
+            font-size: 10px !important;
+            margin: 3mm 0 !important;
+          }
+          .employee-box > div { min-height: 10mm !important; padding: 2mm 2.5mm !important; text-align: center !important; display: flex !important; align-items: center !important; justify-content: center !important; gap: 3px !important; }
+          .term-title, .catalog-title { font-size: 11px !important; margin: 3mm 0 1.5mm !important; }
+          .sheet .term { font-size: 9.5px !important; line-height: 1.35 !important; padding: 2.5mm !important; }
+          .signature { font-size: 10px !important; margin: 3mm 0 !important; }
+          .sheet table { font-size: 9px !important; table-layout: fixed !important; width: 100% !important; }
+          .sheet table th, .sheet table td { padding: 2mm 1.5mm !important; height: 8.5mm !important; line-height: 1.12 !important; }
+          .sheet table th:nth-child(1) { width: 10%; }
+          .sheet table th:nth-child(2) { width: 30%; }
+          .sheet table th:nth-child(3) { width: 12%; }
           .sheet table th:nth-child(4) { width: 16%; }
           .sheet table th:nth-child(5) { width: 16%; }
-          .sheet table th:nth-child(6) { width: 18%; }
-          .catalog { gap: 3px 8px !important; margin-top: 4px !important; }
-          .catalog-item { padding: 3px 4px !important; font-size: 6.7px !important; line-height: 1.1 !important; }
-          .catalog-item strong { font-size: 7px !important; margin-bottom: 1px !important; }
+          .sheet table th:nth-child(6) { width: 16%; }
+          .catalog { gap: 4px 10px !important; margin-top: 3mm !important; font-size: 8.5px !important; }
+          .catalog span { padding: 2mm 2.5mm !important; line-height: 1.22 !important; }
+          .sheet-foot { margin-top: 3mm !important; font-size: 8px !important; }
+        }
+
+        /* Melhorias para uso em celular. */
+        @media (max-width: 700px) {
+          .app-shell { width: 100% !important; max-width: 100% !important; padding: 8px !important; box-sizing: border-box !important; }
+          .topbar { position: sticky; top: 0; z-index: 50; padding: 9px 10px !important; gap: 8px !important; border-radius: 14px !important; }
+          .topbar-brand { gap: 8px !important; }
+          .app-logo-topbar { width: 86px !important; max-width: 27vw !important; max-height: 44px !important; }
+          .topbar-brand strong { font-size: 14px !important; }
+          .topbar-brand span { font-size: 11px !important; max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+          .modern-tabs { position: sticky; top: 62px; z-index: 45; margin: 0 -2px !important; padding: 7px 2px !important; background: #fff; border-bottom: 1px solid #e7ece8; }
+          .modern-tabs button { min-height: 44px !important; padding: 9px 12px !important; font-size: 13px !important; }
+          .panel { padding: 15px !important; border-radius: 16px !important; }
+          .section-head { gap: 10px !important; }
+          .section-head h1, .panel > h1 { font-size: 22px !important; line-height: 1.15 !important; }
+          .panel p { line-height: 1.4 !important; }
+          .grid2, .grid3 { grid-template-columns: 1fr !important; }
+          label { font-size: 14px !important; }
+          input, select, textarea { min-height: 48px !important; font-size: 16px !important; box-sizing: border-box !important; }
+          button { min-height: 46px; }
+          .primary.big { width: 100% !important; min-height: 50px !important; }
+          .selected-card, .admin-row, .history-card { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+          .selected-card .ghost, .history-card .primary, .admin-row > div:last-child { width: 100% !important; }
+          .admin-row > div:last-child { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+          .epi-picker { display: grid !important; grid-template-columns: 1fr !important; gap: 8px !important; }
+          .epi-picker button { width: 100% !important; text-align: left !important; min-height: 48px !important; }
+          .delivery-row { padding: 12px !important; }
+          .history-filter { gap: 8px !important; }
+          .dashboard-hero { border-radius: 16px !important; }
+          .stats-grid { gap: 8px !important; }
+          .stat-card { padding: 12px !important; }
+          .stat-card strong { font-size: 20px !important; }
+          .quick-actions { gap: 8px !important; }
+          .quick-actions button { min-height: 78px !important; }
+          .modal-backdrop { padding: 8px !important; align-items: flex-end !important; }
+          .print-select-card { width: 100% !important; max-height: 92vh !important; border-radius: 18px 18px 0 0 !important; padding: 16px !important; }
         }
 
         .modern-tabs {
@@ -1446,12 +1500,12 @@ function Printable({ delivery }) {
       </div>
 
       <div className="employee-box">
-        <div><b>Nome:</b> {f.nome || ""}</div>
+        <div><b>Nome do colaborador:</b> {f.nome || ""}</div>
+        <div><b>Matrícula:</b> {f.matricula || ""}</div>
+        <div><b>Data de emissão:</b> {formatDate(delivery.data_entrega)}</div>
         <div><b>Admissão:</b> {formatDate(f.data_admissao)}</div>
         <div><b>Função:</b> {f.funcao || ""}</div>
-        <div><b>Registro:</b> {f.matricula || ""}</div>
-        <div><b>Empresa:</b> {f.empresa || ""}</div>
-        <div><b>Setor:</b> {f.setor || ""}</div>
+        <div><b>Empresa/Setor:</b> {[f.empresa, f.setor].filter(Boolean).join(" / ")}</div>
       </div>
 
       <h2 className="term-title">TERMO DE COMPROMISSO</h2>
