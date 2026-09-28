@@ -53,7 +53,13 @@ const [historyDateTo, setHistoryDateTo] = useState("");
   const [encarregados, setEncarregados] = useState([]);
   const [newEncarregado, setNewEncarregado] = useState({ nome: "", email: "", senha: "", confirmarSenha: "" });
   const [editingEncarregado, setEditingEncarregado] = useState(null);
-
+const [administradores, setAdministradores] = useState([]);
+const [newAdministrador, setNewAdministrador] = useState({
+  nome: "",
+  email: "",
+  senha: "",
+  confirmarSenha: ""
+});
   const isAdmin = profile?.role === "admin";
 
   useEffect(() => {
@@ -100,6 +106,7 @@ const [historyDateTo, setHistoryDateTo] = useState("");
     setEpis(e || []);
     setDeliveries(d || []);
     setEncarregados((pr || []).filter((x) => x.role === "encarregado"));
+    setAdministradores((pr || []).filter((x) => x.role === "admin"));
     setLoading(false);
   }
 
@@ -275,6 +282,67 @@ const [historyDateTo, setHistoryDateTo] = useState("");
 
 
   async function saveEncarregado(e) {
+    async function saveAdministrador() {
+  setMessage("");
+
+  const nome = newAdministrador.nome.trim();
+  const email = newAdministrador.email.trim().toLowerCase();
+  const senha = newAdministrador.senha;
+  const confirmarSenha = newAdministrador.confirmarSenha;
+
+  if (!nome || !email || !senha || !confirmarSenha) {
+    setMessage("Preencha todos os campos do administrador.");
+    return;
+  }
+
+  if (senha !== confirmarSenha) {
+    setMessage("As senhas não conferem.");
+    return;
+  }
+
+  if (senha.length < 6) {
+    setMessage("A senha precisa ter pelo menos 6 caracteres.");
+    return;
+  }
+
+  setLoading(true);
+
+  const { data, error } = await supabase.functions.invoke(
+    "criar-administrador",
+    {
+      body: {
+        nome,
+        email,
+        senha
+      }
+    }
+  );
+
+  setLoading(false);
+
+  if (error) {
+    setMessage("Erro ao cadastrar administrador: " + error.message);
+    return;
+  }
+
+  if (data?.error) {
+    setMessage("Erro: " + data.error);
+    return;
+  }
+
+  setNewAdministrador({
+    nome: "",
+    email: "",
+    senha: "",
+    confirmarSenha: ""
+  });
+
+  setMessage("Administrador cadastrado com sucesso.");
+
+  if (session?.user?.id) {
+    loadData(session.user.id);
+  }
+}
     e.preventDefault();
     setMessage("");
 
@@ -485,6 +553,14 @@ const [historyDateTo, setHistoryDateTo] = useState("");
           {isAdmin && <button className={tab === "epis" ? "active" : ""} onClick={() => setTab("epis")}>EPIs</button>}
           {isAdmin && <button className={tab === "encarregados" ? "active" : ""} onClick={() => setTab("encarregados")}>Encarregados</button>}
         </nav>
+{isAdmin && (
+  <button
+    className={tab === "administradores" ? "active" : ""}
+    onClick={() => setTab("administradores")}
+  >
+    👨‍💼 <span>Administradores</span>
+  </button>
+)}
 
         {message && <div className="alert">{message}</div>}
 
@@ -666,6 +742,123 @@ const [historyDateTo, setHistoryDateTo] = useState("");
                 </div>
               ))}
               {!encarregados.length && <div className="muted">Nenhum encarregado vinculado ainda.</div>}
+            </div>
+          </section>
+        )}
+        {isAdmin && tab === "administradores" && (
+          <section className="panel">
+            <div className="section-head">
+              <div>
+                <h1>Administradores</h1>
+                <p>Gerencie quem terá acesso administrativo ao sistema.</p>
+              </div>
+            </div>
+
+            <div className="info-box">
+              <strong>Cadastrar novo administrador</strong>
+              <span>
+                Administradores terão acesso completo ao sistema, incluindo funcionários,
+                EPIs, encarregados, entregas e histórico.
+              </span>
+            </div>
+
+            <form
+              onSubmit={saveAdministrador}
+              className="admin-form"
+            >
+              <div className="grid2">
+                <label>
+                  Nome completo*
+                  <input
+                    required
+                    value={newAdministrador.nome}
+                    onChange={(e) =>
+                      setNewAdministrador({
+                        ...newAdministrador,
+                        nome: e.target.value
+                      })
+                    }
+                    placeholder="Ex.: João Silva"
+                  />
+                </label>
+
+                <label>
+                  E-mail de acesso*
+                  <input
+                    type="email"
+                    required
+                    value={newAdministrador.email}
+                    onChange={(e) =>
+                      setNewAdministrador({
+                        ...newAdministrador,
+                        email: e.target.value
+                      })
+                    }
+                    placeholder="joao@empresa.com"
+                    autoComplete="off"
+                  />
+                </label>
+
+                <label>
+                  Senha inicial*
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={newAdministrador.senha}
+                    onChange={(e) =>
+                      setNewAdministrador({
+                        ...newAdministrador,
+                        senha: e.target.value
+                      })
+                    }
+                    placeholder="Mínimo 6 caracteres"
+                    autoComplete="new-password"
+                  />
+                </label>
+
+                <label>
+                  Confirmar senha*
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={newAdministrador.confirmarSenha}
+                    onChange={(e) =>
+                      setNewAdministrador({
+                        ...newAdministrador,
+                        confirmarSenha: e.target.value
+                      })
+                    }
+                    placeholder="Repita a senha"
+                    autoComplete="new-password"
+                  />
+                </label>
+              </div>
+
+              <button
+                className="primary"
+                disabled={loading}
+              >
+                Cadastrar administrador
+              </button>
+            </form>
+
+            <div className="admin-list">
+              {administradores.map((x) => (
+                <div className="admin-row" key={x.id}>
+                  <div>
+                    <strong>{x.nome || "Sem nome"}</strong>
+                    <span>Perfil: administrador</span>
+                  </div>
+                </div>
+              ))}
+
+              {!administradores.length && (
+                <div className="muted">
+                  Nenhum administrador adicional cadastrado ainda.
+                </div>
+              )}
             </div>
           </section>
         )}
